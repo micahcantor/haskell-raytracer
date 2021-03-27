@@ -1,7 +1,7 @@
 module Chapter4 where
 
-import Chapter1 ( Vec (..), Point(..) )
-import Chapter2 ( Canvas (..), Color (..), initCanvas, canvasDimensions, writeCanvas )
+import Chapter1 ( Vec (..), Point(..), pMult )
+import Chapter2 ( Canvas (..), Color (..), initCanvas, canvasWidth, writeCanvas )
 import Data.Matrix ( Matrix, identity, setElem, diagonalList, fromList, toList )
 
 setElems :: [(a, (Int, Int))] -> Matrix a -> Matrix a
@@ -10,7 +10,9 @@ setElems ((el, (row, col)) : xs) m =
   setElems xs (setElem el (row, col) m)
 
 setPixels :: Color -> [(Int, Int)] -> Canvas -> Canvas
-setPixels co [(x, y)] = setElems [(co, (y, x))]
+setPixels co pairs ca = 
+  let newPairs = map (\(x, y) -> (co, (x, y))) pairs
+   in setElems newPairs ca 
 
 fromPoint :: Point -> Matrix Float 
 fromPoint (Point x y z) = fromList 4 1 [x, y, z, 1]
@@ -28,11 +30,11 @@ toVec m =
   let [x, y, z, _] = toList m
    in Vec x y z
 
-pmMult :: Point -> Matrix Float -> Point 
-pmMult p m = toPoint (m * fromPoint p)
+mpMult :: Matrix Float -> Point -> Point 
+mpMult m  p= toPoint (m * fromPoint p)
 
-vmMult :: Vec -> Matrix Float -> Vec
-vmMult v m = toVec (m * fromVec v)
+mvMult :: Matrix Float -> Vec -> Vec
+mvMult m v = toVec (m * fromVec v)
 
 scaling :: Float -> Float -> Float -> Matrix Float
 scaling x y z = diagonalList 4 0 [x, y, z, 1]
@@ -68,12 +70,15 @@ shearing xy xz yx yz zx zy =
 plotClock :: Canvas -> Canvas
 plotClock c =
   let white = Color 255 255 255
-      (width, height) = canvasDimensions c
-      twelve = Point 0 1 0
-      rotate n = rotationZ (n * (pi / 6))
-      points = foldr (\x acc -> (last acc `pmMult` rotate x) : acc) [twelve] [1..12]
-      pairs = [(round x, round y) | Point x y _ <- points]
+      twelveO'Clock = Point 0 0 1
+      width = fromIntegral $ canvasWidth c
+      rotate n = rotationY (n * (pi / 6))
+      toOrigin = translation (width / 2) 0 (width / 2)
+      radiusScale = scaling (3/8 * width) 0 (3/8 * width)
+      calcPixel p n = (toOrigin * radiusScale * rotate n) `mpMult` p
+      points = zipWith calcPixel (replicate 12 twelveO'Clock) [0..11]
+      pairs = [(round x, round z) | Point x _ z <- points]
    in setPixels white pairs c
 
 runChapter4 :: IO ()
-runChapter4 = writeCanvas "clock.ppm" (plotClock (initCanvas 200 200))
+runChapter4 = writeCanvas "clock.ppm" (plotClock $ initCanvas 200 200)
