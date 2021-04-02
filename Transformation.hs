@@ -1,17 +1,14 @@
-module Chapter4 where
+module Transformation where
 
-import Chapter1 (Point (..), Vec (..), pMult)
-import Chapter2 (Canvas (..), Color (..), canvasWidth, initCanvas, writeCanvas)
+import VecPoint ( Point(..), Vec(..) )
+import Color ( Color )
+import Canvas ( Canvas )
 import Data.Matrix (Matrix, detLU, diagonalList, fromList, identity, setElem, toList)
 import qualified Data.Matrix (inverse)
 
 type Transformation = Matrix Float
 
-inverse :: Transformation -> Transformation
-inverse t = case Data.Matrix.inverse t of
-  (Left _) -> error "matrix is not invertible"
-  (Right t) -> t
-
+{- Helper functions -}
 setElems :: [(a, (Int, Int))] -> Matrix a -> Matrix a
 setElems [] m = m
 setElems ((el, (row, col)) : xs) m =
@@ -21,6 +18,12 @@ setPixels :: Color -> [(Int, Int)] -> Canvas -> Canvas
 setPixels co pairs ca =
   let newPairs = map (\(x, y) -> (co, (x, y))) pairs
    in setElems newPairs ca
+
+{- Conversions and utility -}
+inverse :: Transformation -> Transformation
+inverse t = case Data.Matrix.inverse t of
+  (Left _) -> error "matrix is not invertible"
+  (Right t) -> t
 
 fromPoint :: Point -> Transformation
 fromPoint (Point x y z) = fromList 4 1 [x, y, z, 1]
@@ -44,6 +47,7 @@ mpMult m p = toPoint (m * fromPoint p)
 mvMult :: Transformation -> Vec -> Vec
 mvMult m v = toVec (m * fromVec v)
 
+{- Predefined transformations -}
 scaling :: Float -> Float -> Float -> Transformation
 scaling x y z = diagonalList 4 0 [x, y, z, 1]
 
@@ -78,20 +82,3 @@ shearing xy xz yx yz zx zy =
           (zy, (3, 2))
         ]
    in setElems values (identity 4)
-
-{- Putting it together -}
-plotClock :: Canvas -> Canvas
-plotClock c =
-  let white = Color 255 255 255
-      twelveO'Clock = Point 0 0 1
-      width = fromIntegral $ canvasWidth c
-      rotate n = rotationY (n * (pi / 6))
-      toOrigin = translation (width / 2) 0 (width / 2)
-      radiusScale = scaling (3 / 8 * width) 0 (3 / 8 * width)
-      calcPixel p n = (toOrigin * radiusScale * rotate n) `mpMult` p
-      points = zipWith calcPixel (replicate 12 twelveO'Clock) [0 .. 11]
-      pairs = [(round x, round z) | Point x _ z <- points]
-   in setPixels white pairs c
-
-runChapter4 :: IO ()
-runChapter4 = writeCanvas "clock.ppm" (plotClock $ initCanvas 200 200)
