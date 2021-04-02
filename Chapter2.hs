@@ -1,9 +1,15 @@
 module Chapter2 where
 
-import System.IO
-import Control.Monad
+import System.IO ( IOMode(WriteMode), hPutStrLn, withFile )
 import Data.Matrix ( matrix, setElem, toLists, Matrix(..) )
 import Chapter1
+    ( normalize,
+      tick,
+      vMult,
+      Environment(..),
+      Point(Point),
+      Projectile(Projectile, position),
+      Vec(Vec) )
 
 data Color = Color Float Float Float
 type Canvas = Matrix Color

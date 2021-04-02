@@ -1,16 +1,24 @@
 module Chapter1 where
 
-data Vec = Vec Float Float Float deriving (Show)
-data Point = Point Float Float Float deriving (Show)
+import Test.HUnit (Assertion, Test (TestCase, TestLabel, TestList), assertEqual, runTestTT)
+
+data Vec = Vec Float Float Float deriving (Show, Eq)
+data Point = Point Float Float Float deriving (Show, Eq)
 
 vAdd :: Vec -> Vec -> Vec
 vAdd (Vec x1 y1 z1) (Vec x2 y2 z2) = Vec (x1 + x2) (y1 + y2) (z1 + z2)
+
+pAdd :: Point -> Point -> Vec
+pAdd (Point x1 y1 z1) (Point x2 y2 z2) = Vec (x1 + x2) (y1 + y2) (z1 + z2)
 
 vpAdd :: Point -> Vec -> Point
 vpAdd (Point x1 y1 z1) (Vec x2 y2 z2) = Point (x1 + x2) (y1 + y2) (z1 + z2)
 
 vSub :: Vec -> Vec -> Vec
 vSub (Vec x1 y1 z1) (Vec x2 y2 z2) = Vec (x1 - x2) (y1 - y2) (z1 - z2)
+
+pSub :: Point -> Point -> Vec
+pSub (Point x1 y1 z1) (Point x2 y2 z2) = Vec (x1 - x2) (y1 - y2) (z1 - z2)
 
 vpSub :: Point -> Vec -> Point
 vpSub (Point x1 y1 z1) (Vec x2 y2 z2) = Point (x1 - x2) (y1 - y2) (z1 - z2)
@@ -69,4 +77,10 @@ runChapter1 = do
   let p = Projectile (Point 0 1 0) (normalize (Vec 1 1 0))
   let e = Environment (Vec 0 (-0.1) 0) (Vec (-0.01) 0 0)
   go p e 0
-  
+
+{- Tests -}
+testDotProduct :: Test 
+testDotProduct = TestCase $ do
+  let a = Vec 1 2 3
+      b = Vec 2 3 4
+  assertEqual "result" 20 (a `dot` b)
