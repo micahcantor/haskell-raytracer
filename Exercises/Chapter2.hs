@@ -1,6 +1,6 @@
-module Chapter2 where
+module Exercises.Chapter2 where
 
-import Chapter1 ( Projectile (Projectile, position), Environment(..), tick)
+import Exercises.Chapter1 ( Projectile (Projectile, position), Environment(..), tick)
 import Canvas (Canvas, writeCanvas, initCanvas, canvasWidth, canvasHeight, setPixel)
 import VecPoint (Vec(..), Point (..), vMult, normalize)
 import Color ( Color(Color) )

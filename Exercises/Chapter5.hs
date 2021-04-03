@@ -1,4 +1,4 @@
-module Chapter5 where
+module Exercises.Chapter5 where
 
 import Data.Matrix ( mapPos )
 import Canvas ( Canvas, initCanvas, canvasWidth, writeCanvas )

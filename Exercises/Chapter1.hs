@@ -1,4 +1,4 @@
-module Chapter1 where
+module Exercises.Chapter1 where
 
 import Test.HUnit (Assertion, Test (TestCase, TestLabel, TestList), assertEqual, runTestTT)
 import VecPoint ( Point(..), Vec(..), vAdd, vpAdd, normalize, dot )

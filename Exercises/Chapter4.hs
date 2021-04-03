@@ -1,4 +1,4 @@
-module Chapter4 where
+module Exercises.Chapter4 where
 
 import Canvas ( Canvas, initCanvas, canvasWidth, writeCanvas )
 import VecPoint ( Point(Point) )
