@@ -1,9 +1,15 @@
 module Color where
 
+import VecPoint (approxEq)
+
 data Color = Color Float Float Float
 
 instance Show Color where
     show (Color r g b) = show r ++ " " ++ show g ++ " " ++ show b
+
+instance Eq Color where
+    (Color r1 g1 b1) == (Color r2 g2 b2)
+        = approxEq r1 r2 && approxEq g1 g2 && approxEq b1 b2
 
 cAdd :: Color -> Color-> Color
 cAdd (Color r1 g1 b1) (Color r2 g2 b2) = Color (r1 + r2) (b1 + b2) (g1 + g2)

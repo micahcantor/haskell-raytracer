@@ -10,7 +10,7 @@ plotProjectile :: Projectile -> Environment -> Canvas -> Canvas
 plotProjectile pr@(Projectile (Point x y z) vel) env canv
   | y <= 0 = canv
   | otherwise =
-    let red = Color 255 0 0
+    let red = Color 1 0 0
         width = canvasWidth canv
         height = canvasHeight canv
         nextProjectile = tick pr env
@@ -26,4 +26,4 @@ runChapter2 = do
   let p = Projectile (Point 0 1 0) (11.25 `vMult` normalize (Vec 1 1.8 0))
       e = Environment (Vec 0 (-0.1) 0) (Vec (-0.01) 0 0)
       initialCanvas = initCanvas 900 550
-  writeCanvas "parabola.ppm" (plotProjectile p e initialCanvas)
+  writeCanvas "Exercises/parabola.ppm" (plotProjectile p e initialCanvas)

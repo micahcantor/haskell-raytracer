@@ -24,7 +24,7 @@ drawSphereShadow canvas =
     )
     canvas
   where
-    red = Color 235 0 0
+    red = Color 1 0 0
     black = Color 0 0 0
     rayStart = Point 0 0 (-5)
     sphereCenter = Point 0 0 0
@@ -36,4 +36,4 @@ drawSphereShadow canvas =
 runChapter5 :: IO ()
 runChapter5 = do
   let canvas = drawSphereShadow (initCanvas 400 400)
-  writeCanvas "sphere-shadow.ppm" canvas
+  writeCanvas "Exercises/sphere-shadow.ppm" canvas

@@ -9,7 +9,7 @@ import Color ( Color(Color) )
 {- Putting it together -}
 plotClock :: Canvas -> Canvas
 plotClock c =
-  let white = Color 255 255 255
+  let white = Color 1 1 1
       twelveO'Clock = Point 0 0 1
       width = fromIntegral $ canvasWidth c
       rotate n = rotationY (n * (pi / 6))
@@ -21,4 +21,4 @@ plotClock c =
    in setPixels white pairs c
 
 runChapter4 :: IO ()
-runChapter4 = writeCanvas "clock.ppm" (plotClock $ initCanvas 200 200)
+runChapter4 = writeCanvas "Exercises/clock.ppm" (plotClock $ initCanvas 200 200)
