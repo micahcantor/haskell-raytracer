@@ -4,7 +4,7 @@ import qualified Data.SortedList as SL
 import Test.HUnit (Assertion, Test (TestCase, TestLabel, TestList), assertEqual, runTestTT)
 import VecPoint ( Point(Point), Vec(Vec), pSub, dot )
 import Transformation ( inverse, scaling, translation )
-import Sphere(Sphere(..), unitSphere, setSphereTransform)
+import Sphere(Sphere(..), unitSphere)
 import Ray(Ray(..), transform)
 
 data Intersection = Intersection Float Sphere -- t value, intersected object
@@ -103,7 +103,7 @@ testIntersectionBehind = TestCase $ do
 testIntersectionScaled :: Test
 testIntersectionScaled = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      s = setSphereTransform unitSphere (scaling 2 2 2)
+      s = unitSphere { transformation = scaling 2 2 2}
       xs = s `intersect` r
   assertEqual "first" (Intersection 3 s) (headSL xs)
   assertEqual "second" (Intersection 7 s) (xs `atSL` 1)
@@ -111,7 +111,7 @@ testIntersectionScaled = TestCase $ do
 testIntersectionTranslated :: Test
 testIntersectionTranslated = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      s = setSphereTransform unitSphere (translation 5 0 0)
+      s = unitSphere { transformation = translation 5 0 0 }
       xs = s `intersect` r
   assertEqual "length" (length xs) 0
 

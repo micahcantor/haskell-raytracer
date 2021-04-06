@@ -1,20 +1,22 @@
 module Sphere where
 
-import Test.HUnit (Assertion, Test (TestCase, TestLabel, TestList), assertEqual, runTestTT)
 import Data.Matrix (identity, transpose)
-import VecPoint (Point(..), Vec(..), normalize, pSub)
-import Transformation (Transformation, inverse, translation, mpMult, mvMult)
-import Ray (Ray(..))
-import Material(Material, defaultMaterial)
+import Material (Material, defaultMaterial)
+import Ray (Ray (..))
+import Test.HUnit (Assertion, Test (TestCase, TestLabel, TestList), assertEqual, runTestTT)
+import Transformation (Transformation, inverse, mpMult, mvMult, translation)
+import VecPoint (Point (..), Vec (..), normalize, pSub)
 
-data Sphere = Sphere Point Float Transformation Material -- center, radius, transform, material
+data Sphere = Sphere
+  { center :: Point,
+    radius :: Float,
+    transformation :: Transformation,
+    material :: Material
+  }
   deriving (Show, Eq)
 
 unitSphere :: Sphere
-unitSphere = Sphere (Point 0 0 0) 1 (identity 4) defaultMaterial 
-
-setSphereTransform :: Sphere -> Transformation -> Sphere
-setSphereTransform (Sphere c r _ m) t = Sphere c r t m
+unitSphere = Sphere (Point 0 0 0) 1 (identity 4) defaultMaterial
 
 normalAt :: Sphere -> Point -> Vec
 normalAt (Sphere center _ t _) p =
@@ -23,6 +25,7 @@ normalAt (Sphere center _ t _) p =
       worldNormal = transpose (inverse t) `mvMult` objectNormal
    in normalize worldNormal
 
+{- Tests -}
 testNormalAt :: Test
 testNormalAt = TestCase $ do
   let s = unitSphere
@@ -36,7 +39,6 @@ testNormalAt = TestCase $ do
 
 testNormalAtTranslated :: Test
 testNormalAtTranslated = TestCase $ do
-  let s = setSphereTransform unitSphere (translation 0 1 0)
+  let s = unitSphere { transformation = translation 0 1 0 }
       n = normalAt s (Point 0 1.70711 (-0.70711))
   assertEqual "equality" (Vec 0 0.70711 (-0.70711)) n
-

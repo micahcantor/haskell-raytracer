@@ -2,7 +2,7 @@ module Canvas where
 
 import System.IO ( IOMode(WriteMode), hPutStrLn, withFile )
 import Data.Matrix ( Matrix(..), matrix, setElem, toLists )
-import Color ( Color(..) )
+import Color ( Color(..), cMult, toPPM )
 
 type Canvas = Matrix Color
 
@@ -26,8 +26,8 @@ writeCanvas fp c = do
     let maxColor = 255
         w = show (ncols c)
         h = show (nrows c)
-        header = "P3\n" ++ w ++ " " ++ h ++ "\n" ++ show maxColor
-        rowToString x = unwords $ map show x
+        header = unwords ["P3", "\n", w, h, "\n", show maxColor]
+        rowToString xs = unwords $ map (toPPM maxColor . cMult (fromIntegral maxColor)) xs
         ppmLines = map rowToString (toLists c)
     withFile fp WriteMode (\handle -> do
         hPutStrLn handle header

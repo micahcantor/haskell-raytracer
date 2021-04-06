@@ -82,4 +82,3 @@ testReflect = TestCase $ do
       r2 = reflect v n2
   assertEqual "slanted" (Vec 1 0 0) r1
   assertEqual "45 deg" (Vec 1 1 0) r2
-
