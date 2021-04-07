@@ -39,6 +39,6 @@ testNormalAt = TestCase $ do
 
 testNormalAtTranslated :: Test
 testNormalAtTranslated = TestCase $ do
-  let s = unitSphere { transformation = translation 0 1 0 }
+  let s = unitSphere {transformation = translation 0 1 0}
       n = normalAt s (Point 0 1.70711 (-0.70711))
   assertEqual "equality" (Vec 0 0.70711 (-0.70711)) n

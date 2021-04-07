@@ -1,11 +1,11 @@
 module Intersection where
 
 import qualified Data.SortedList as SL
+import Ray (Ray (..), position, transform)
+import Sphere (Sphere (..), normalAt, unitSphere)
 import Test.HUnit (Assertion, Test (TestCase, TestLabel, TestList), assertEqual, runTestTT)
-import VecPoint ( Point(Point), Vec(Vec), pSub, dot )
-import Transformation ( inverse, scaling, translation )
-import Sphere(Sphere(..), unitSphere)
-import Ray(Ray(..), transform)
+import Transformation (inverse, scaling, translation)
+import VecPoint (Point (Point), Vec (Vec), dot, pSub, vNeg)
 
 data Intersection = Intersection Float Sphere -- t value, intersected object
   deriving (Show, Eq)
@@ -27,8 +27,8 @@ hit xs =
   let zeroIntersection = Intersection 0 unitSphere
    in fmap fst $ SL.uncons $ SL.filterGE zeroIntersection xs
 
-intersect :: Sphere -> Ray -> Intersections
-intersect s@(Sphere center r t _) ray
+sphereIntersect :: Sphere -> Ray -> Intersections
+sphereIntersect s@(Sphere center r t _) ray
   | d < 0 = SL.toSortedList []
   | otherwise = SL.toSortedList [t1, t2]
   where
@@ -40,6 +40,22 @@ intersect s@(Sphere center r t _) ray
     d = (b ^ 2) - (4 * a * c)
     t1 = Intersection (((- b) - sqrt d) / (2 * a)) s
     t2 = Intersection (((- b) + sqrt d) / (2 * a)) s
+
+data Computation = Computation Bool Float Sphere Point Vec Vec deriving (Show, Eq)
+-- inside, t, object, point, eye, normal
+
+prepareComputation :: Ray -> Intersection -> Computation
+-- precomputes the state of an intersection
+prepareComputation r@(Ray origin direction) (Intersection t object) =
+  let point = position r t
+      eyev = vNeg direction
+      normalv = normalAt object point
+      normalDotEye = normalv `dot` eyev
+      newNormalv
+        | normalDotEye < 0 = vNeg normalv
+        | otherwise = normalv
+      inside = normalDotEye < 0
+   in Computation inside t object point eyev newNormalv
 
 {- Tests -}
 testHitPos :: Test
@@ -80,7 +96,7 @@ testIntersectionTangent :: Test
 testIntersectionTangent = TestCase $ do
   let r = Ray (Point 0 1 (-5)) (Vec 0 0 1)
       s = unitSphere
-      xs = s `intersect` r
+      xs = s `sphereIntersect` r
   assertEqual "first" (Intersection 5.0 s) (headSL xs)
   assertEqual "second" (Intersection 5.0 s) (xs `atSL` 1)
 
@@ -88,7 +104,7 @@ testIntersectionInside :: Test
 testIntersectionInside = TestCase $ do
   let r = Ray (Point 0 0 0) (Vec 0 0 1)
       s = unitSphere
-      xs = s `intersect` r
+      xs = s `sphereIntersect` r
   assertEqual "first" (Intersection (-1.0) s) (headSL xs)
   assertEqual "second" (Intersection 1.0 s) (xs `atSL` 1)
 
@@ -96,24 +112,53 @@ testIntersectionBehind :: Test
 testIntersectionBehind = TestCase $ do
   let r = Ray (Point 0 0 5) (Vec 0 0 1)
       s = unitSphere
-      xs = s `intersect` r
+      xs = s `sphereIntersect` r
   assertEqual "first" (Intersection (-6.0) s) (headSL xs)
   assertEqual "second" (Intersection (-4.0) s) (xs `atSL` 1)
 
 testIntersectionScaled :: Test
 testIntersectionScaled = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      s = unitSphere { transformation = scaling 2 2 2}
-      xs = s `intersect` r
+      s = unitSphere {transformation = scaling 2 2 2}
+      xs = s `sphereIntersect` r
   assertEqual "first" (Intersection 3 s) (headSL xs)
   assertEqual "second" (Intersection 7 s) (xs `atSL` 1)
 
 testIntersectionTranslated :: Test
 testIntersectionTranslated = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      s = unitSphere { transformation = translation 5 0 0 }
-      xs = s `intersect` r
+      s = unitSphere {transformation = translation 5 0 0}
+      xs = s `sphereIntersect` r
   assertEqual "length" (length xs) 0
+
+testPrepareComputation :: Test
+testPrepareComputation = TestCase $ do
+  let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
+      shape = unitSphere
+      i@(Intersection t object) = Intersection 4 shape
+  assertEqual
+    "equality"
+    (Computation False t object (Point 0 0 (-1)) (Vec 0 0 (-1)) (Vec 0 0 (-1)))
+    (prepareComputation r i)
+
+testPrepareComputationOutside :: Test
+testPrepareComputationOutside = TestCase $ do
+  let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
+      shape = unitSphere
+      i = Intersection 4 shape
+      (Computation inside _ _ _ _ _) = prepareComputation r i
+  assertEqual "equality" False inside
+
+testPrepareComputationInside :: Test
+testPrepareComputationInside = TestCase $ do
+  let r = Ray (Point 0 0 0) (Vec 0 0 1)
+      shape = unitSphere
+      i@(Intersection _ object) = Intersection 1 shape
+      (Computation inside t obj point eye normal) = prepareComputation r i
+  assertEqual
+    "equality"
+    (Computation True t object (Point 0 0 1) (Vec 0 0 (-1)) (Vec 0 0 (-1)))
+    (prepareComputation r i)
 
 tests :: Test
 tests =
@@ -126,5 +171,8 @@ tests =
       testHitPos,
       testHitSomeNeg,
       testHitAllNeg,
-      testHitMix
+      testHitMix,
+      testPrepareComputation,
+      testPrepareComputationOutside,
+      testPrepareComputationInside
     ]

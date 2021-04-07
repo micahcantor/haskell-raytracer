@@ -3,7 +3,7 @@ module Exercises.Chapter6 where
 import Canvas (Canvas, canvasWidth, initCanvas, writeCanvas, setPixel)
 import Color (Color (Color), cMult, toPPM)
 import Data.Matrix (mapPos, getElem)
-import Intersection (Intersection (..), hit, intersect)
+import Intersection (Intersection (..), hit, sphereIntersect)
 import Light (PointLight (PointLight), lighting)
 import Material (Material(..), defaultMaterial)
 import Ray (Ray (Ray), position)
@@ -19,7 +19,7 @@ drawSphere canvas =
             wallY = halfWall - (pixelSize * fromIntegral y)
             wallPosition = Point wallX wallY wallZ
             r@(Ray origin direction) = Ray rayStart (normalize (wallPosition `pSub` rayStart))
-            xs = intersect sphere r
+            xs = sphereIntersect sphere r
          in case hit xs of
               Just (Intersection t sphereHit) ->
                 let point = position r t
