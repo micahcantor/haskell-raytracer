@@ -1,8 +1,8 @@
 module RayTest (tests) where
 
-import Test.HUnit (Test(..), assertEqual)
-import VecPoint ( Point(Point), Vec(Vec) )
-import Ray ( position, Ray(Ray) )
+import Ray (Ray (Ray), position)
+import Test.HUnit (Test (..), assertEqual)
+import VecPoint (Point (Point), Vec (Vec))
 
 testPosition :: Test
 testPosition = TestCase $ do

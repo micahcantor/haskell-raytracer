@@ -41,6 +41,7 @@ sphereIntersect s@(Sphere center r t _) ray
     t2 = Intersection (((- b) + sqrt d) / (2 * a)) s
 
 data Computation = Computation Bool Float Sphere Point Vec Vec deriving (Show, Eq)
+
 -- inside, t, object, point, eye, normal
 
 prepareComputation :: Ray -> Intersection -> Computation

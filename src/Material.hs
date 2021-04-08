@@ -1,6 +1,6 @@
 module Material where
 
-import Color ( Color(..) )
+import Color (Color (..))
 
 data Material = Material
   { color :: Color,

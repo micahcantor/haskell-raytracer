@@ -1,9 +1,9 @@
 module Sphere where
 
-import Data.Matrix (identity, transpose)
+import Data.Matrix (transpose)
 import Material (Material, defaultMaterial)
 import Ray (Ray (..))
-import Transformation (Transformation, inverse, mpMult, mvMult, translation)
+import Transformation (Transformation, inverse, mpMult, mvMult, translation, identity)
 import VecPoint (Point (..), Vec (..), normalize, pSub)
 
 data Sphere = Sphere
@@ -15,7 +15,7 @@ data Sphere = Sphere
   deriving (Show, Eq)
 
 unitSphere :: Sphere
-unitSphere = Sphere (Point 0 0 0) 1 (identity 4) defaultMaterial
+unitSphere = Sphere (Point 0 0 0) 1 identity defaultMaterial
 
 normalAt :: Sphere -> Point -> Vec
 normalAt (Sphere center _ t _) p =

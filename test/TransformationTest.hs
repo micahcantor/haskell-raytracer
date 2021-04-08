@@ -1,9 +1,13 @@
 module TransformationTest (tests) where
 
-import Test.HUnit (Test(..), assertEqual)
-import VecPoint ( Point(Point), Vec(Vec) )
+import Test.HUnit (Test (..), assertEqual)
 import Transformation
-    ( scaling, translation, viewTransform, identity )
+  ( identity,
+    scaling,
+    translation,
+    viewTransform,
+  )
+import VecPoint (Point (Point), Vec (Vec))
 
 testViewTransformDefault :: Test
 testViewTransformDefault = TestCase $ do

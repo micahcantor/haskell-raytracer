@@ -1,19 +1,20 @@
 module IntersectionTest (tests) where
 
-import Test.HUnit (Test(..), assertEqual)
 import qualified Data.SortedList as SL
-import Ray ( Ray(Ray) )
 import Intersection
-    ( atSL,
-      headSL,
-      hit,
-      prepareComputation,
-      sphereIntersect,
-      Computation(Computation),
-      Intersection(Intersection) )
-import Sphere ( Sphere(transformation), unitSphere )
-import VecPoint ( Vec(Vec), Point(Point) )
+  ( Computation (Computation),
+    Intersection (Intersection),
+    atSL,
+    headSL,
+    hit,
+    prepareComputation,
+    sphereIntersect,
+  )
+import Ray (Ray (Ray))
+import Sphere (Sphere (transformation), unitSphere)
+import Test.HUnit (Test (..), assertEqual)
 import Transformation (scaling, translation)
+import VecPoint (Point (Point), Vec (Vec))
 
 testHitPos :: Test
 testHitPos = TestCase $ do

@@ -21,6 +21,7 @@ setPixels co pairs ca =
 
 {- Conversions and utility -}
 inverse :: Transformation -> Transformation
+-- essentially converts the Data.Matrix function into one that produces run time errors
 inverse t = case M.inverse t of
   (Left _) -> error "matrix is not invertible"
   (Right t) -> t

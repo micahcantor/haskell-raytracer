@@ -4,7 +4,7 @@ import Color (Color (..), cAdd, cMult, hadamard)
 import Material (Material (..), color, defaultMaterial)
 import VecPoint (Point (..), Vec (..), dot, normalize, pSub, reflect, vNeg)
 
-data PointLight = PointLight {position :: Point, intensity :: Color} 
+data PointLight = PointLight {position :: Point, intensity :: Color}
 
 lighting :: Material -> PointLight -> Point -> Vec -> Vec -> Color
 lighting material light point eyev normalv =

@@ -1,9 +1,9 @@
 module SphereTest where
 
-import Test.HUnit (Test(..), assertEqual)
-import Sphere ( normalAt, unitSphere, Sphere(transformation) )
-import VecPoint ( Point(Point), Vec(Vec) )
-import Transformation ( translation )
+import Sphere (Sphere (transformation), normalAt, unitSphere)
+import Test.HUnit (Test (..), assertEqual)
+import Transformation (translation)
+import VecPoint (Point (Point), Vec (Vec))
 
 testNormalAt :: Test
 testNormalAt = TestCase $ do

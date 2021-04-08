@@ -27,8 +27,8 @@ shadeHit :: World -> Computation -> Color
 -- sum the colors produced by the hits of each light source in the world
 shadeHit (World lights _) (Computation _ _ object point eyev normalv) =
   let colors = map (\light -> lighting (material object) light point eyev normalv) lights
-   in foldr1 cAdd colors 
-  
+   in foldr1 cAdd colors
+
 colorAt :: World -> Ray -> Color
 colorAt w r =
   let black = Color 0 0 0

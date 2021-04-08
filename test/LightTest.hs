@@ -1,10 +1,10 @@
 module LightTest (tests) where
 
-import Test.HUnit (Test(..), assertEqual)
-import Material ( defaultMaterial )
-import VecPoint ( Point(Point), Vec(Vec) )
-import Light ( PointLight(PointLight), lighting )
-import Color ( Color(Color) )
+import Color (Color (Color))
+import Light (PointLight (PointLight), lighting)
+import Material (defaultMaterial)
+import Test.HUnit (Test (..), assertEqual)
+import VecPoint (Point (Point), Vec (Vec))
 
 testLightingBetween :: Test
 testLightingBetween = TestCase $ do
