@@ -1,10 +1,11 @@
 module Transformation where
 
-import VecPoint ( Point(..), Vec(..) )
-import Color ( Color )
-import Canvas ( Canvas )
+import Canvas (Canvas)
+import Color (Color)
 import Data.Matrix (Matrix, detLU, diagonalList, fromList, identity, setElem, toList)
 import qualified Data.Matrix (inverse)
+import Test.HUnit (Test (TestCase, TestList), assertEqual, runTestTT)
+import VecPoint (Point (..), Vec (..), cross, normalize, pSub)
 
 type Transformation = Matrix Float
 
@@ -82,3 +83,48 @@ shearing xy xz yx yz zx zy =
           (zy, (3, 2))
         ]
    in setElems values (identity 4)
+
+{- View Transformations -}
+viewTransform :: Point -> Point -> Vec -> Transformation
+viewTransform from@(Point fromX fromY fromZ) to up =
+  let forward@(Vec forwardX forwardY forwardZ) = normalize (to `pSub` from)
+      left@(Vec leftX leftY leftZ) = forward `cross` up
+      trueUp@(Vec trueUpX trueUpY trueUpZ) = left `cross` forward
+      values =
+        [ (leftX, (1, 1)),
+          (leftY, (1, 2)),
+          (leftZ, (1, 3)),
+          (trueUpX, (2, 1)),
+          (trueUpY, (2, 2)),
+          (trueUpX, (2, 3)),
+          (- forwardX, (3, 1)),
+          (- forwardY, (3, 2)),
+          (- forwardZ, (3, 3))
+        ]
+      orientation = setElems values (identity 4)
+   in orientation * translation (- fromX) (- fromY) (- fromZ)
+
+{- Tests -}
+testViewTransformDefault :: Test
+testViewTransformDefault = TestCase $ do
+  let from = Point 0 0 0
+      to = Point 0 0 (-1)
+      up = Vec 0 1 0
+  assertEqual "default" (identity 4) (viewTransform from to up)
+
+testViewTransformPositiveZ :: Test
+testViewTransformPositiveZ = TestCase $ do
+  let from = Point 0 0 0
+      to = Point 0 0 1
+      up = Vec 0 1 0
+  assertEqual "scaling" (scaling (-1) 1 (-1)) (viewTransform from to up)
+
+testViewTransformTranslate :: Test
+testViewTransformTranslate = TestCase $ do
+  let from = Point 0 0 8
+      to = Point 0 0 0
+      up = Vec 0 1 0
+  assertEqual "translation" (translation 0 0 (-8)) (viewTransform from to up)
+
+tests :: Test
+tests = TestList [testViewTransformDefault, testViewTransformPositiveZ, testViewTransformTranslate]
