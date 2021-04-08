@@ -2,9 +2,8 @@ module Transformation where
 
 import Canvas (Canvas)
 import Color (Color)
-import Data.Matrix (Matrix, detLU, diagonalList, fromList, identity, setElem, toList)
-import qualified Data.Matrix (inverse)
-import Test.HUnit (Test (TestCase, TestList), assertEqual, runTestTT)
+import Data.Matrix (Matrix, detLU, diagonalList, fromList, setElem, toList)
+import qualified Data.Matrix as M (inverse, identity)
 import VecPoint (Point (..), Vec (..), cross, normalize, pSub)
 
 type Transformation = Matrix Float
@@ -22,7 +21,7 @@ setPixels co pairs ca =
 
 {- Conversions and utility -}
 inverse :: Transformation -> Transformation
-inverse t = case Data.Matrix.inverse t of
+inverse t = case M.inverse t of
   (Left _) -> error "matrix is not invertible"
   (Right t) -> t
 
@@ -49,28 +48,31 @@ mvMult :: Transformation -> Vec -> Vec
 mvMult m v = toVec (m * fromVec v)
 
 {- Predefined transformations -}
+identity :: Transformation
+identity = M.identity 4
+
 scaling :: Float -> Float -> Float -> Transformation
 scaling x y z = diagonalList 4 0 [x, y, z, 1]
 
 translation :: Float -> Float -> Float -> Transformation
 translation x y z =
   let values = [(x, (1, 4)), (y, (2, 4)), (z, (3, 4))]
-   in setElems values (identity 4)
+   in setElems values identity
 
 rotationX :: Float -> Transformation
 rotationX r =
   let values = [(cos r, (3, 3)), (- sin r, (2, 3)), (sin r, (3, 2)), (cos r, (2, 2))]
-   in setElems values (identity 4)
+   in setElems values identity
 
 rotationY :: Float -> Transformation
 rotationY r =
   let values = [(cos r, (1, 1)), (- sin r, (3, 1)), (sin r, (1, 3)), (cos r, (3, 3))]
-   in setElems values (identity 4)
+   in setElems values identity
 
 rotationZ :: Float -> Transformation
 rotationZ r =
   let values = [(cos r, (1, 1)), (- sin r, (3, 1)), (sin r, (2, 1)), (cos r, (2, 2))]
-   in setElems values (identity 4)
+   in setElems values identity
 
 shearing :: Float -> Float -> Float -> Float -> Float -> Float -> Transformation
 shearing xy xz yx yz zx zy =
@@ -82,7 +84,7 @@ shearing xy xz yx yz zx zy =
           (zx, (3, 1)),
           (zy, (3, 2))
         ]
-   in setElems values (identity 4)
+   in setElems values identity
 
 {- View Transformations -}
 viewTransform :: Point -> Point -> Vec -> Transformation
@@ -101,30 +103,6 @@ viewTransform from@(Point fromX fromY fromZ) to up =
           (- forwardY, (3, 2)),
           (- forwardZ, (3, 3))
         ]
-      orientation = setElems values (identity 4)
+      orientation = setElems values identity
    in orientation * translation (- fromX) (- fromY) (- fromZ)
 
-{- Tests -}
-testViewTransformDefault :: Test
-testViewTransformDefault = TestCase $ do
-  let from = Point 0 0 0
-      to = Point 0 0 (-1)
-      up = Vec 0 1 0
-  assertEqual "default" (identity 4) (viewTransform from to up)
-
-testViewTransformPositiveZ :: Test
-testViewTransformPositiveZ = TestCase $ do
-  let from = Point 0 0 0
-      to = Point 0 0 1
-      up = Vec 0 1 0
-  assertEqual "scaling" (scaling (-1) 1 (-1)) (viewTransform from to up)
-
-testViewTransformTranslate :: Test
-testViewTransformTranslate = TestCase $ do
-  let from = Point 0 0 8
-      to = Point 0 0 0
-      up = Vec 0 1 0
-  assertEqual "translation" (translation 0 0 (-8)) (viewTransform from to up)
-
-tests :: Test
-tests = TestList [testViewTransformDefault, testViewTransformPositiveZ, testViewTransformTranslate]

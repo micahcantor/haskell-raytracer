@@ -1,2 +1,9 @@
 cradle:
   cabal:
+    components:
+    - path: "./src"
+      component: "lib:raytracer"
+    - path: "./app"
+      component: "exe:raytracer"
+    - path: "./test"
+      component: "test:raytracer-test"
