@@ -24,10 +24,10 @@ canvasDimensions c = (canvasWidth c, canvasHeight c)
 writeCanvas :: FilePath -> Canvas -> IO ()
 writeCanvas fp c = do
   let maxColor = 255
-      w = show (ncols c)
-      h = show (nrows c)
+      w = show (canvasWidth c)
+      h = show (canvasHeight c)
       header = unwords ["P3", "\n", w, h, "\n", show maxColor]
-      rowToString xs = unwords $ map (toPPM maxColor . cMult (fromIntegral maxColor)) xs
+      rowToString = unwords . map (toPPM maxColor . cMult (fromIntegral maxColor))
       ppmLines = map rowToString (toLists c)
   withFile
     fp
