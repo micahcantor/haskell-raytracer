@@ -19,7 +19,7 @@ library
   exposed-modules:     Canvas, Color, Intersection, Light, Material, Ray, Sphere, Transformation, VecPoint, World
   -- other-modules:
   -- other-extensions:
-  build-depends:       matrix, sorted-list, base ^>=4.14.1.0
+  build-depends:       base ^>=4.14.1.0, matrix, sorted-list
   hs-source-dirs:      src
   default-language:    Haskell2010
 
@@ -27,9 +27,19 @@ executable raytracer
   main-is:             Main.hs
   -- other-modules:
   -- other-extensions:
-  build-depends:       base ^>=4.14.1.0, raytracer
+  build-depends:       base ^>=4.14.1.0, raytracer, matrix
   hs-source-dirs:      app
   default-language:    Haskell2010
+
+executable raytracer-profiling
+  main-is:             Main.hs
+  hs-source-dirs:      app
+  ghc-options:
+    -O2
+    -threaded
+    -fprof-auto
+    "-with-rtsopts=-N -p -s -h -i0.1"
+  build-depends: base ^>=4.14.1.0, raytracer, matrix
 
 test-suite raytracer-test
   default-language:    Haskell2010

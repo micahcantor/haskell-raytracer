@@ -1,6 +1,5 @@
 module Exercises.Chapter1 where
 
-import Test.HUnit (Assertion, Test (TestCase, TestLabel, TestList), assertEqual, runTestTT)
 import VecPoint ( Point(..), Vec(..), vAdd, vpAdd, normalize, dot )
 
 {- Exercise: Putting it together -}
@@ -25,10 +24,3 @@ runChapter1 = do
   let p = Projectile (Point 0 1 0) (normalize (Vec 1 1 0))
   let e = Environment (Vec 0 (-0.1) 0) (Vec (-0.01) 0 0)
   go p e 0
-
-{- Tests -}
-testDotProduct :: Test 
-testDotProduct = TestCase $ do
-  let a = Vec 1 2 3
-      b = Vec 2 3 4
-  assertEqual "result" 20 (a `dot` b)

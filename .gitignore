@@ -1,3 +1,4 @@
 *.ppm
 dist-newstyle/
 cabal.project.local
+raytracer-profiling.*

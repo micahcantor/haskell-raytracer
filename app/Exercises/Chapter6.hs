@@ -44,4 +44,4 @@ drawSphere canvas =
 main :: IO ()
 main = do
   let canvas = drawSphere (initCanvas 100 100)
-  writeCanvas "Exercises/sphere-shaded2.ppm" canvas
+  writeCanvas "Exercises/sphere-shaded.ppm" canvas
