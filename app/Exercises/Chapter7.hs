@@ -20,7 +20,7 @@ drawScene =
   where
     world = 
       defaultWorld 
-        { lights = [PointLight (Point (-10) 10 (-10)) (Color 1 1 1)],
+        { lights = [PointLight (Point (-10) 10 (-10)) (Color 1 1 1), PointLight (Point 10 10 (-10)) (Color 1 1 1)],
           objects = [floor, leftWall, rightWall, middle, left, right]}
     camera =
       defaultCamera
@@ -57,4 +57,4 @@ drawScene =
     right = middle {transformation = translation 1.5 0.5 (-0.5) * scaling 0.5 0.5 0.5}
 
 runChapter7 :: IO ()
-runChapter7 = writeCanvas "three-spheres.ppm" drawScene
+runChapter7 = writeCanvas "three-spheres-shadows.ppm" drawScene

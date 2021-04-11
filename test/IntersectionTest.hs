@@ -2,7 +2,7 @@ module IntersectionTest (tests) where
 
 import qualified Data.SortedList as SL
 import Intersection
-  ( Computation (Computation),
+  ( Computation (..),
     Intersection (Intersection),
     atSL,
     headSL,
@@ -12,9 +12,9 @@ import Intersection
   )
 import Ray (Ray (Ray))
 import Sphere (Sphere (transformation), unitSphere)
-import Test.HUnit (Test (..), assertEqual)
+import Test.HUnit (Test (..), assertEqual, assertBool)
 import Transformation (scaling, translation)
-import VecPoint (Point (Point), Vec (Vec))
+import VecPoint (Point (Point), Vec (Vec), epsilon)
 
 testHitPos :: Test
 testHitPos = TestCase $ do
@@ -94,17 +94,18 @@ testPrepareComputation = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       shape = unitSphere
       i@(Intersection t object) = Intersection 4 shape
+      (Computation inside compT compObj point eye normal _) = prepareComputation r i
   assertEqual
     "equality"
-    (Computation False t object (Point 0 0 (-1)) (Vec 0 0 (-1)) (Vec 0 0 (-1)))
-    (prepareComputation r i)
+    (False, t, object, Point 0 0 (-1), Vec 0 0 (-1), Vec 0 0 (-1))
+    (inside, compT, compObj, point, eye, normal)
 
 testPrepareComputationOutside :: Test
 testPrepareComputationOutside = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       shape = unitSphere
       i = Intersection 4 shape
-      (Computation inside _ _ _ _ _) = prepareComputation r i
+      (Computation inside _ _ _ _ _ _) = prepareComputation r i
   assertEqual "equality" False inside
 
 testPrepareComputationInside :: Test
@@ -112,11 +113,23 @@ testPrepareComputationInside = TestCase $ do
   let r = Ray (Point 0 0 0) (Vec 0 0 1)
       shape = unitSphere
       i@(Intersection _ object) = Intersection 1 shape
-      (Computation inside t obj point eye normal) = prepareComputation r i
+      (Computation inside t obj point eye normal _) = prepareComputation r i
   assertEqual
     "equality"
-    (Computation True t object (Point 0 0 1) (Vec 0 0 (-1)) (Vec 0 0 (-1)))
-    (prepareComputation r i)
+    (True, t, object, Point 0 0 1, Vec 0 0 (-1), Vec 0 0 (-1))
+    (inside, t, obj, point, eye, normal)
+
+testPrepareComputationOffset :: Test
+testPrepareComputationOffset = TestCase $ do
+  let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
+      shape = unitSphere { transformation = translation 0 0 1}
+      i = Intersection 5 shape
+      comps = prepareComputation r i
+      (Point _ _ overZ) = over comps
+      (Point _ _ intersectZ) = point comps
+  assertBool 
+    "the hit should offset the point"
+    (overZ < (- epsilon) / 2 && intersectZ > overZ) 
 
 tests :: Test
 tests =
@@ -132,5 +145,6 @@ tests =
       testHitMix,
       testPrepareComputation,
       testPrepareComputationOutside,
-      testPrepareComputationInside
+      testPrepareComputationInside,
+      testPrepareComputationOffset
     ]
