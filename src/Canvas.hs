@@ -1,7 +1,7 @@
 module Canvas where
 
 import Color (Color (..), cMult, toPPM)
-import Data.Matrix (Matrix (..), matrix, setElem, toLists)
+import Data.Matrix (Matrix (..), matrix, setElem, toLists, getElem)
 import System.IO (IOMode (WriteMode), hPutStrLn, withFile)
 
 type Canvas = Matrix Color
@@ -20,6 +20,9 @@ canvasWidth = ncols
 
 canvasDimensions :: Canvas -> (Int, Int)
 canvasDimensions c = (canvasWidth c, canvasHeight c)
+
+(!) :: Canvas -> (Int,  Int) -> Color
+canvas ! (x, y) = getElem y x canvas
 
 writeCanvas :: FilePath -> Canvas -> IO ()
 writeCanvas fp c = do

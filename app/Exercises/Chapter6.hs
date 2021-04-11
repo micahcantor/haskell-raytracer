@@ -14,7 +14,7 @@ import VecPoint (Point (Point), normalize, pSub, vNeg)
 drawSphere :: Canvas -> Canvas
 drawSphere canvas =
   mapPos
-    ( \(y, x) a ->
+    ( \(y, x) _ ->
         let wallX = (pixelSize * fromIntegral x) - halfWall
             wallY = halfWall - (pixelSize * fromIntegral y)
             wallPosition = Point wallX wallY wallZ
