@@ -5,8 +5,7 @@ import Canvas ( Canvas, initCanvas, canvasWidth, writeCanvas )
 import Ray ( Ray(Ray) )
 import VecPoint ( Point(Point), pSub, normalize )
 import Color ( Color(Color) )
-import Intersection ( hit, sphereIntersect)
-import Sphere ( unitSphere )
+import Shape ( intersect, hit, defaultSphere )
 
 {- Putting it together -}
 drawSphereShadow :: Canvas -> Canvas
@@ -17,7 +16,7 @@ drawSphereShadow canvas =
             wallY = halfWall - (pixelSize * fromIntegral y)
             wallPosition = Point wallX wallY wallZ
             r = Ray rayStart (normalize (wallPosition `pSub` rayStart))
-            xs = sphereIntersect unitSphere r
+            xs = intersect defaultSphere r
          in case hit xs of
               Just _ -> red
               Nothing -> black

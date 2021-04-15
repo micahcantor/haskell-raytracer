@@ -2,14 +2,17 @@ module WorldTest (tests) where
 
 import Color (Color (Color))
 import Data.SortedList as SL (fromSortedList)
-import Intersection (Intersection (Intersection), prepareComputation)
 import Light (PointLight (PointLight))
 import Ray (Ray (Ray))
 import Test.HUnit (Test (..), assertEqual)
 import VecPoint (Point (Point), Vec (Vec))
 import World (World (lights, objects), colorAt, defaultWorld, intersect, isShadowed, shadeHit)
-import Sphere ( unitSphere, Sphere(transformation) )
 import Transformation (translation)
+import Shape
+    ( Intersection(Intersection),
+      Shape(..),
+      defaultSphere,
+      prepareComputation )
 
 testIntersect :: Test
 testIntersect = TestCase $ do
@@ -38,8 +41,8 @@ testShadeHitInside = TestCase $ do
 
 testShadeHitInShadow :: Test
 testShadeHitInShadow = TestCase $ do
-  let s1 = unitSphere
-      s2 = unitSphere { transformation = translation 0 0 10 }
+  let s1 = defaultSphere 
+      s2 = defaultSphere  { spTransform = translation 0 0 10 }
       w = defaultWorld { lights = [PointLight (Point 0 0 (-10)) (Color 1 1 1)], objects = [s1, s2] }
       r = Ray (Point 0 0 5) (Vec 0 0 1)
       i = Intersection 4 s2
