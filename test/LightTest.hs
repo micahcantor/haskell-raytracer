@@ -2,7 +2,7 @@ module LightTest (tests) where
 
 import Color (Color (Color))
 import Light (PointLight (PointLight), lighting)
-import Material (defaultMaterial)
+import Material (Material(..), white, black, stripePattern, defaultMaterial)
 import Test.HUnit (Test (..), assertEqual)
 import VecPoint (Point (Point), Vec (Vec))
 
@@ -72,6 +72,17 @@ testLightingInShadow = TestCase $ do
       result = lighting m light pos eyev normalv inShadow
   assertEqual "between" (Color 1.9 1.9 1.9) result
 
+testLightingPattern :: Test
+testLightingPattern = TestCase $ do
+  let m = defaultMaterial {ambient = 1, diffuse = 0, specular = 0, pattern = stripePattern white black}
+      eyev = Vec 0 0 (-1)
+      normalv = Vec 0 0 (-1)
+      light = PointLight (Point 0 0 (-10)) white
+      c1 = lighting m light (Point 0.9 0 0) eyev normalv False
+      c2 = lighting m light (Point 1.1 0 0) eyev normalv False
+  assertEqual "first stripe is white" white c1
+  assertEqual "second stripe is black" black c2
+
 tests :: Test
 tests =
   TestList
@@ -80,5 +91,6 @@ tests =
       testLightingOpposite45,
       testLightingInPath,
       testLightingBehind,
-      testLightingInShadow
+      testLightingInShadow,
+      testLightingPattern
     ]
