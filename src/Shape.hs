@@ -1,26 +1,21 @@
 module Shape where
 
 import Data.Matrix (transpose)
+import Types
+    ( Shape(Shape),
+      Intersections,
+      Intersection(..),
+      Computation(Computation),
+      Point(..),
+      Vec(..),
+      Ray(..) )
 import qualified Data.SortedList as SL
-import Material (Material, defaultMaterial)
-import Ray (Ray (..), position, transform)
-import Transformation (Transformation, identity, inverse, mpMult, mvMult, scaling, translation)
-import VecPoint (Point (Point), Vec (Vec), dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd)
+import Ray (position, transform)
+import Transformation (identity, inverse, mpMult, mvMult, scaling, translation)
+import VecPoint (dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd)
+import Material
 
 {- Shape ADT -}
-data Shape = Shape
-  { localIntersect :: Shape -> Ray -> Intersections,
-    localNormalAt :: Point -> Vec,
-    material :: Material,
-    transform :: Transformation
-  }
-
-instance Show Shape where
-  show (Shape _ _ m t) = unwords [show m, show t]
-
-instance Eq Shape where
-  (Shape _ _ m1 t1) == (Shape _ _ m2 t2) = m1 == m2 && t1 == t2
-
 -- Main shape functions:
 intersect :: Shape -> Ray -> Intersections
 intersect shape@(Shape localIntersect _ _ transform) ray =
@@ -72,12 +67,6 @@ planeNormalAt :: Point -> Vec
 planeNormalAt _ = Vec 0 1 0 
 
 {- Intersection ADT -}
-data Intersection = Intersection Float Shape deriving (Show, Eq) -- t value, intersected object
-
-instance Ord Intersection where
-  (Intersection t1 _) <= (Intersection t2 _) = t1 <= t2
-
-type Intersections = SL.SortedList Intersection
 
 headSL :: Intersections -> Intersection
 headSL xs = head $ SL.fromSortedList xs
@@ -94,22 +83,10 @@ hit xs =
   fmap fst $ SL.uncons $ SL.filter (\(Intersection t _) -> t > 0) xs
 
 {- Computation -}
--- a structure to hold: inside, t, object, point, eye, normal, over-point
-data Computation = Computation
-  { inside :: Bool,
-    t :: Float,
-    object :: Shape,
-    point :: Point,
-    eye :: Vec,
-    normal :: Vec,
-    over :: Point
-  }
-  deriving (Eq)
-
 prepareComputation :: Ray -> Intersection -> Computation
 -- precomputes the state of an intersection
 prepareComputation r@(Ray origin direction) (Intersection t object) =
-  let point = position r t
+  let point = Ray.position r t
       eyev = vNeg direction
       normalv = normalAt object point
       normalDotEye = normalv `dot` eyev

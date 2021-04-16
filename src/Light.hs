@@ -1,10 +1,14 @@
 module Light where
 
-import Color (Color (..), cAdd, cMult, hadamard)
-import Material (Material (..), color, defaultMaterial, stripeAt, black)
-import VecPoint (Point (..), Vec (..), dot, normalize, pSub, reflect, vNeg)
-
-data PointLight = PointLight {position :: Point, intensity :: Color}
+import Types
+    ( Material(color, pattern, ambient, diffuse, shininess, specular),
+      Point,
+      Vec,
+      PointLight(position, intensity),
+      Color )
+import Color (cAdd, cMult, hadamard)
+import Material (defaultMaterial, stripeAt, black)
+import VecPoint (dot, normalize, pSub, reflect, vNeg)
 
 lighting :: Material -> PointLight -> Point -> Vec -> Vec -> Bool -> Color
 lighting material light point eyev normalv inShadow =

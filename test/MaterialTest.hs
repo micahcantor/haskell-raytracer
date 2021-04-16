@@ -2,7 +2,7 @@ module MaterialTest where
 
 import Test.HUnit (Test (..), assertEqual)
 import Material ( stripePattern, black, white, stripeAt )
-import VecPoint ( Point(Point) )
+import Types ( Point(Point) )
 
 testStripeAt :: Test
 testStripeAt = TestCase $ do

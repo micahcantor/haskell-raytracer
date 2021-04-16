@@ -1,19 +1,26 @@
 module Exercises.Chapter6 where
 
-import Canvas (Canvas, canvasWidth, initCanvas, writeCanvas, setPixel)
-import Color (Color (Color), cMult, toPPM)
+import Canvas (canvasWidth, initCanvas, writeCanvas, setPixel)
+import Color (cMult, toPPM)
 import Data.Matrix (mapPos, getElem)
-import Light (PointLight (PointLight), lighting)
-import Material (Material(..), defaultMaterial)
-import Ray (Ray (Ray), position)
-import VecPoint (Point (Point), normalize, pSub, vNeg)
+import Light (lighting)
+import Material (defaultMaterial)
+import Ray (position)
+import VecPoint (normalize, pSub, vNeg)
 import Shape
-    ( Intersection(Intersection),
-      Shape(..),
-      intersect,
+    (intersect,
       normalAt,
       hit,
       defaultSphere )
+import Types
+    ( Shape(material),
+      Intersection(Intersection),
+      Material(color),
+      Point(Point),
+      Ray(Ray),
+      PointLight(PointLight),
+      Color(Color),
+      Canvas )
 
 {- Putting it together -}
 drawSphere :: Canvas -> Canvas
@@ -27,7 +34,7 @@ drawSphere canvas =
             xs = intersect sphere r
          in case hit xs of
               Just (Intersection t sphereHit) ->
-                let point = position r t
+                let point = Ray.position r t
                     normal = normalAt sphereHit point
                     eye = vNeg direction
                  in lighting material light point eye normal False

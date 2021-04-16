@@ -1,19 +1,24 @@
 module Exercises.Chapter7 where
 
 import Camera
-  ( Camera (fov, hSize, vSize),
-    defaultCamera,
+  ( defaultCamera,
     render,
   )
-import qualified Camera (Camera (transform))
-import Canvas (Canvas, writeCanvas)
-import Color (Color (Color))
-import Light (PointLight (PointLight))
-import Material (Material (color, diffuse, specular), defaultMaterial)
-import Shape (Shape (material, transform), defaultSphere)
+import Canvas (writeCanvas)
+import Material (defaultMaterial)
+import Shape (defaultSphere)
 import Transformation (rotationX, rotationY, scaling, translation, viewTransform)
-import VecPoint (Point (Point), Vec (Vec))
-import World (World (..), defaultWorld)
+import World (defaultWorld)
+import Types
+    ( Shape(material, transform),
+      Material(color, diffuse, specular),
+      Point(Point),
+      Vec(Vec),
+      World(lights, objects),
+      PointLight(PointLight),
+      Color(Color),
+      Canvas,
+      Camera(hSize, vSize, fov, camTransform) )
 
 drawScene :: Canvas
 drawScene = render camera world
@@ -28,7 +33,7 @@ drawScene = render camera world
         { hSize = 100,
           vSize = 75,
           fov = pi / 3,
-          Camera.transform = viewTransform (Point 0 1.5 (-5)) (Point 0 1 0) (Vec 0 1 0)
+          camTransform = viewTransform (Point 0 1.5 (-5)) (Point 0 1 0) (Vec 0 1 0)
         }
     floor =
       defaultSphere

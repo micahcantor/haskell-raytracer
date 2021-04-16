@@ -1,20 +1,25 @@
 module Exercises.Chapter9 (runChapter9) where
 
 import Camera
-  ( Camera (fov, hSize, vSize),
-    defaultCamera,
+  ( defaultCamera,
     render,
   )
-import qualified Camera (Camera(transform))
-import Canvas ( Canvas, writeCanvas )
-import Light ( PointLight(PointLight) )
-import Shape (Shape(..), defaultPlane, defaultSphere)
-import World ( World(lights, objects), defaultWorld )
-import Color ( Color(Color) )
+import Canvas (writeCanvas )
+import Shape (defaultPlane, defaultSphere)
+import World ( defaultWorld )
 import Material
-    ( Material(color, diffuse, specular), defaultMaterial )
-import VecPoint ( Point(Point), Vec(Vec) )
+    ( defaultMaterial )
 import Transformation ( scaling, translation, viewTransform )
+import Types
+    ( Shape(material, transform),
+      Material(color, diffuse, specular),
+      Point(Point),
+      Vec(Vec),
+      World(lights, objects),
+      PointLight(PointLight),
+      Color(Color),
+      Canvas,
+      Camera(hSize, vSize, fov, camTransform) )
 
 drawScene :: Canvas
 drawScene = render camera world
@@ -29,7 +34,7 @@ drawScene = render camera world
         { hSize = 800,
           vSize = 600,
           fov = pi / 3,
-          Camera.transform = viewTransform (Point 0 1.5 (-5)) (Point 0 1 0) (Vec 0 1 0)
+          camTransform = viewTransform (Point 0 1.5 (-5)) (Point 0 1 0) (Vec 0 1 0)
         }
     floor =
       defaultPlane

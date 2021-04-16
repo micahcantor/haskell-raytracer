@@ -1,15 +1,23 @@
 module World where
 
-import Color (Color (Color), cAdd)
+import Types
+    ( Shape(transform, material),
+      Intersections,
+      Intersection(Intersection),
+      Computation(Computation),
+      Material(color, diffuse, specular),
+      Point(..),
+      World(World),
+      Ray(..),
+      PointLight(PointLight),
+      Color(..) )
+import Color (cAdd)
 import Data.SortedList as SL (fromSortedList)
-import Light (PointLight (..), lighting)
-import Material (Material (..), defaultMaterial)
-import Ray (Ray (Ray))
-import Shape (Computation (..), Intersection (..), Intersections, Shape (..), defaultSphere, hit, intersect, prepareComputation)
+import Light (lighting)
+import Material (defaultMaterial)
+import Shape (defaultSphere, hit, intersect, prepareComputation)
 import Transformation (scaling)
-import VecPoint (Point (Point), Vec (Vec), magnitude, normalize, pSub)
-
-data World = World {lights :: [PointLight], objects :: [Shape]}
+import VecPoint (magnitude, normalize, pSub)
 
 defaultWorld :: World
 defaultWorld =

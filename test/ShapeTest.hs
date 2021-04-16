@@ -1,10 +1,14 @@
 module ShapeTest where
 
-import Ray (Ray (..))
-import Shape (Intersection (..), Shape (..), defaultPlane, defaultSphere, headSL, toIntersections, normalAt)
+import Types
+    ( Shape(Shape, transform),
+      Intersection(Intersection),
+      Point(Point),
+      Vec(Vec),
+      Ray(Ray) )
+import Shape (defaultPlane, defaultSphere, headSL, toIntersections, normalAt)
 import Test.HUnit (Test (..), assertEqual)
 import Transformation (translation)
-import VecPoint (Point (Point), Vec (Vec))
 
 testSphereNormalAt :: Test
 testSphereNormalAt = TestCase $ do

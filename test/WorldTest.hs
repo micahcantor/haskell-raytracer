@@ -1,18 +1,21 @@
 module WorldTest (tests) where
 
-import Color (Color (Color))
 import Data.SortedList as SL (fromSortedList)
-import Light (PointLight (PointLight))
-import Ray (Ray (Ray))
 import Test.HUnit (Test (..), assertEqual)
-import VecPoint (Point (Point), Vec (Vec))
-import World (World (lights, objects), colorAt, defaultWorld, intersect, isShadowed, shadeHit)
+import World (colorAt, defaultWorld, intersect, isShadowed, shadeHit)
 import Transformation (translation)
 import Shape
-    ( Intersection(Intersection),
-      Shape(..),
-      defaultSphere,
+    (defaultSphere,
       prepareComputation )
+import Types
+    ( Shape(transform),
+      Intersection(Intersection),
+      Point(Point),
+      Vec(Vec),
+      World(objects, lights),
+      Ray(Ray),
+      PointLight(PointLight),
+      Color(Color) )
 
 testIntersect :: Test
 testIntersect = TestCase $ do

@@ -1,7 +1,8 @@
 module VecPointTest where
 
 import Test.HUnit (Test (..), assertEqual)
-import VecPoint (Vec (Vec), reflect)
+import VecPoint (reflect)
+import Types ( Vec(Vec) )
 
 testReflect :: Test
 testReflect = TestCase $ do

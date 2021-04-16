@@ -1,15 +1,18 @@
 module IntersectionTest (tests) where
 
 import qualified Data.SortedList as SL
-import Ray (Ray (Ray))
 import Test.HUnit (Test (..), assertEqual, assertBool)
-import Transformation (scaling, translation)
-import VecPoint (Point (Point), Vec (Vec), epsilon)
-import Shape
-    ( Computation(Computation, over, point),
+import Types
+    ( Shape(transform),
       Intersection(Intersection),
-      Shape(..),
-      headSL,
+      Computation(Computation, over, point),
+      Point(Point),
+      Vec(Vec),
+      Ray(Ray) )
+import Transformation (scaling, translation)
+import VecPoint (epsilon)
+import Shape
+    (headSL,
       atSL,
       hit,
       defaultSphere,

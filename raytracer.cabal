@@ -16,7 +16,7 @@ category:            Graphics
 extra-source-files:  CHANGELOG.md
 
 library
-  exposed-modules:     Camera, Canvas, Color, Light, Material, Ray, Shape, Transformation, VecPoint, World
+  exposed-modules:     Camera, Canvas, Color, Light, Material, Ray, Shape, Transformation, Types, VecPoint, World
   -- other-modules:
   -- other-extensions:
   build-depends:       base ^>=4.14.1.0, matrix, sorted-list
@@ -25,7 +25,7 @@ library
 
 executable raytracer
   main-is:             Main.hs
-  other-modules:       Exercises.Chapter1, Exercises.Chapter4, Exercises.Chapter5, Exercises.Chapter6, Exercises.Chapter7, Exercises.Chapter9
+  other-modules:       Exercises.Chapter9
   -- other-extensions:
   build-depends:       base ^>=4.14.1.0, raytracer, matrix
   hs-source-dirs:      app
@@ -33,7 +33,7 @@ executable raytracer
 
 executable raytracer-profiling
   main-is:             Main.hs
-  other-modules:       Exercises.Chapter1, Exercises.Chapter4, Exercises.Chapter5, Exercises.Chapter6, Exercises.Chapter7, Exercises.Chapter9
+  other-modules:       Exercises.Chapter9
   hs-source-dirs:      app
   ghc-options:
     -O2
@@ -47,5 +47,5 @@ test-suite raytracer-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Main.hs
-  other-modules:       CameraTest, IntersectionTest, LightTest, RayTest, ShapeTest, TransformationTest, VecPointTest, WorldTest
+  other-modules:       CameraTest, IntersectionTest, LightTest, MaterialTest, RayTest, ShapeTest, TransformationTest, VecPointTest, WorldTest
   build-depends:       base ^>=4.14.1.0, test-framework, test-framework-hunit, HUnit, sorted-list, raytracer

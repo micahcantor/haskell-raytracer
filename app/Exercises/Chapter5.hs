@@ -1,10 +1,9 @@
 module Exercises.Chapter5 where
 
 import Data.Matrix ( mapPos )
-import Canvas ( Canvas, initCanvas, canvasWidth, writeCanvas )
-import Ray ( Ray(Ray) )
-import VecPoint ( Point(Point), pSub, normalize )
-import Color ( Color(Color) )
+import Types ( Point(Point), Ray(Ray), Color(Color), Canvas )
+import Canvas ( initCanvas, canvasWidth, writeCanvas )
+import VecPoint (pSub, normalize )
 import Shape ( intersect, hit, defaultSphere )
 
 {- Putting it together -}

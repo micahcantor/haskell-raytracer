@@ -1,12 +1,9 @@
 module Transformation where
 
-import Canvas (Canvas)
-import Color (Color)
+import Types ( Point(..), Vec(..), Transformation, Color, Canvas )
 import Data.Matrix (Matrix, detLU, diagonalList, fromList, setElem, toList)
 import qualified Data.Matrix as M (inverse, identity)
-import VecPoint (Point (..), Vec (..), cross, normalize, pSub)
-
-type Transformation = Matrix Float
+import VecPoint (cross, normalize, pSub)
 
 {- Helper functions -}
 setElems :: [(a, (Int, Int))] -> Matrix a -> Matrix a
