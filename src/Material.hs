@@ -1,6 +1,6 @@
 module Material where
 
-import Types ( Pattern, Material(Material), Point(..), Color(..) )
+import Types ( Pattern, Shape, Material(Material), Point(..), Color(..) )
 
 defaultMaterial :: Material
 defaultMaterial = Material (Color 1 1 1) 0.1 0.9 0.9 200 emptyPattern
@@ -20,3 +20,4 @@ stripeAt (c1:c2:_) (Point x _ _)
   | even (floor x) = c1
   | otherwise = c2
 
+{- stripeAtShape :: Pattern -> Shape -> Point -}

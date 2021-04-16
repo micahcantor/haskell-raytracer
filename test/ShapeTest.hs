@@ -5,8 +5,10 @@ import Types
       Intersection(Intersection),
       Point(Point),
       Vec(Vec),
-      Ray(Ray) )
-import Shape (defaultPlane, defaultSphere, headSL, toIntersections, normalAt)
+      Ray(Ray),
+      toIntersections )
+import Shape (defaultPlane, defaultSphere, normalAt)
+import Intersection ( headSL )
 import Test.HUnit (Test (..), assertEqual)
 import Transformation (translation)
 

@@ -8,14 +8,14 @@ import Types
       Computation(Computation),
       Point(..),
       Vec(..),
-      Ray(..) )
+      Ray(..),
+      toIntersections )
 import qualified Data.SortedList as SL
-import Ray (position, transform)
 import Transformation (identity, inverse, mpMult, mvMult, scaling, translation)
 import VecPoint (dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd)
-import Material
+import Material ( defaultMaterial )
+import Ray ( transform )
 
-{- Shape ADT -}
 -- Main shape functions:
 intersect :: Shape -> Ray -> Intersections
 intersect shape@(Shape localIntersect _ _ transform) ray =
@@ -51,7 +51,6 @@ sphereNormalAt :: Point -> Vec
 sphereNormalAt (Point x y z) = Vec x y z
 
 {- Planes -}
-
 defaultPlane :: Shape
 defaultPlane = Shape planeIntersect planeNormalAt defaultMaterial identity
 
@@ -65,34 +64,3 @@ planeIntersect plane (Ray (Point _ originY _) (Vec _ directionY _))
 planeNormalAt :: Point -> Vec
 -- constant normal of the xz-plane, other planes obtained through transformaiton
 planeNormalAt _ = Vec 0 1 0 
-
-{- Intersection ADT -}
-
-headSL :: Intersections -> Intersection
-headSL xs = head $ SL.fromSortedList xs
-
-atSL :: Intersections -> Int -> Intersection
-xs `atSL` i = head $ SL.fromSortedList $ SL.drop i xs
-
-toIntersections :: [Intersection] -> Intersections
-toIntersections = SL.toSortedList
-
-hit :: Intersections -> Maybe Intersection
--- returns the first nonzero intersection, if it exists
-hit xs =
-  fmap fst $ SL.uncons $ SL.filter (\(Intersection t _) -> t > 0) xs
-
-{- Computation -}
-prepareComputation :: Ray -> Intersection -> Computation
--- precomputes the state of an intersection
-prepareComputation r@(Ray origin direction) (Intersection t object) =
-  let point = Ray.position r t
-      eyev = vNeg direction
-      normalv = normalAt object point
-      normalDotEye = normalv `dot` eyev
-      newNormalv
-        | normalDotEye < 0 = vNeg normalv
-        | otherwise = normalv
-      inside = normalDotEye < 0
-      overPoint = point `vpAdd` ((200 * epsilon) `vMult` newNormalv)
-   in Computation inside t object point eyev newNormalv overPoint

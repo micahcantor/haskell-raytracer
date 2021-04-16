@@ -1,6 +1,6 @@
 module Color where
 
-import Types ( Color(..) )
+import Types (Color (..))
 
 toPPM :: Int -> Color -> String
 toPPM maxColor (Color r g b) =

@@ -1,6 +1,6 @@
 module VecPoint where
 
-import Types
+import Types (Point (..), Vec (..))
 
 epsilon :: Float
 epsilon = 0.00001

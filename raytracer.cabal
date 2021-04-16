@@ -16,7 +16,7 @@ category:            Graphics
 extra-source-files:  CHANGELOG.md
 
 library
-  exposed-modules:     Camera, Canvas, Color, Light, Material, Ray, Shape, Transformation, Types, VecPoint, World
+  exposed-modules:     Camera, Canvas, Color, Intersection, Light, Material, Ray, Shape, Transformation, Types, VecPoint, World
   -- other-modules:
   -- other-extensions:
   build-depends:       base ^>=4.14.1.0, matrix, sorted-list

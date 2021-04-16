@@ -1,21 +1,21 @@
 module WorldTest (tests) where
 
 import Data.SortedList as SL (fromSortedList)
+import Intersection (prepareComputation)
+import Shape (defaultSphere)
 import Test.HUnit (Test (..), assertEqual)
-import World (colorAt, defaultWorld, intersect, isShadowed, shadeHit)
 import Transformation (translation)
-import Shape
-    (defaultSphere,
-      prepareComputation )
 import Types
-    ( Shape(transform),
-      Intersection(Intersection),
-      Point(Point),
-      Vec(Vec),
-      World(objects, lights),
-      Ray(Ray),
-      PointLight(PointLight),
-      Color(Color) )
+  ( Color (Color),
+    Intersection (Intersection),
+    Point (Point),
+    PointLight (PointLight),
+    Ray (Ray),
+    Shape (transform),
+    Vec (Vec),
+    World (lights, objects),
+  )
+import World (colorAt, defaultWorld, intersect, isShadowed, shadeHit)
 
 testIntersect :: Test
 testIntersect = TestCase $ do
@@ -35,18 +35,18 @@ testShadeHit = TestCase $ do
 
 testShadeHitInside :: Test
 testShadeHitInside = TestCase $ do
-  let w = defaultWorld { lights = [PointLight (Point 0 0.25 0) (Color 1 1 1)] }
+  let w = defaultWorld {lights = [PointLight (Point 0 0.25 0) (Color 1 1 1)]}
       r = Ray (Point 0 0 0) (Vec 0 0 1)
       shape = objects w !! 1
       i = Intersection 0.5 shape
-      comps = prepareComputation r i 
+      comps = prepareComputation r i
   assertEqual "equality" (Color 0.90498 0.90498 0.90498) (shadeHit w comps)
 
 testShadeHitInShadow :: Test
 testShadeHitInShadow = TestCase $ do
-  let s1 = defaultSphere 
-      s2 = defaultSphere  { transform = translation 0 0 10 }
-      w = defaultWorld { lights = [PointLight (Point 0 0 (-10)) (Color 1 1 1)], objects = [s1, s2] }
+  let s1 = defaultSphere
+      s2 = defaultSphere {transform = translation 0 0 10}
+      w = defaultWorld {lights = [PointLight (Point 0 0 (-10)) (Color 1 1 1)], objects = [s1, s2]}
       r = Ray (Point 0 0 5) (Vec 0 0 1)
       i = Intersection 4 s2
       comps = prepareComputation r i

@@ -1,23 +1,19 @@
 module IntersectionTest (tests) where
 
 import qualified Data.SortedList as SL
-import Test.HUnit (Test (..), assertEqual, assertBool)
-import Types
-    ( Shape(transform),
-      Intersection(Intersection),
-      Computation(Computation, over, point),
-      Point(Point),
-      Vec(Vec),
-      Ray(Ray) )
+import Intersection ( headSL, atSL, hit, prepareComputation )
+import Shape ( intersect, defaultSphere )
+import Test.HUnit (Test (..), assertBool, assertEqual)
 import Transformation (scaling, translation)
+import Types
+  ( Computation (Computation, over, point),
+    Intersection (Intersection),
+    Point (Point),
+    Ray (Ray),
+    Shape (transform),
+    Vec (Vec),
+  )
 import VecPoint (epsilon)
-import Shape
-    (headSL,
-      atSL,
-      hit,
-      defaultSphere,
-      intersect,
-      prepareComputation )
 
 testHitPos :: Test
 testHitPos = TestCase $ do
@@ -130,9 +126,9 @@ testPrepareComputationOffset = TestCase $ do
       comps = prepareComputation r i
       (Point _ _ overZ) = over comps
       (Point _ _ intersectZ) = point comps
-  assertBool 
+  assertBool
     "the hit should offset the point"
-    (overZ < (- epsilon) / 2 && intersectZ > overZ) 
+    (overZ < (- epsilon) / 2 && intersectZ > overZ)
 
 tests :: Test
 tests =

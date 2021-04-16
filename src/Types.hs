@@ -3,7 +3,7 @@ module Types where
 {- Declares types for export to avoid cyclic module annoyances -}
 
 import Data.Matrix ( Matrix )
-import Data.SortedList as SL ( SortedList )
+import Data.SortedList as SL ( SortedList, toSortedList )
 
 {- VECPOINT -}
 data Vec = Vec Float Float Float deriving (Show)
@@ -68,6 +68,9 @@ instance Ord Intersection where
   (Intersection t1 _) <= (Intersection t2 _) = t1 <= t2
 
 type Intersections = SL.SortedList Intersection
+
+toIntersections :: [Intersection] -> Intersections
+toIntersections = SL.toSortedList
 
 data Computation = Computation
   { inside :: Bool,
