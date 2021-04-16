@@ -9,7 +9,7 @@ import Ray (Ray (Ray), position)
 import VecPoint (Point (Point), normalize, pSub, vNeg)
 import Shape
     ( Intersection(Intersection),
-      Shape(spMaterial),
+      Shape(..),
       intersect,
       normalAt,
       hit,
@@ -37,7 +37,7 @@ drawSphere canvas =
   where
     black = Color 0 0 0
     material = defaultMaterial { color = Color 1 0.2 1 }
-    sphere = defaultSphere  { spMaterial = material }
+    sphere = defaultSphere  { material = material }
     light = PointLight (Point (-10) 10 (-10)) (Color 1 1 1)
     rayStart = Point 0 0 (-5)
     sphereCenter = Point 0 0 0

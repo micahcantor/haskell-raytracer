@@ -42,7 +42,7 @@ testShadeHitInside = TestCase $ do
 testShadeHitInShadow :: Test
 testShadeHitInShadow = TestCase $ do
   let s1 = defaultSphere 
-      s2 = defaultSphere  { spTransform = translation 0 0 10 }
+      s2 = defaultSphere  { transform = translation 0 0 10 }
       w = defaultWorld { lights = [PointLight (Point 0 0 (-10)) (Color 1 1 1)], objects = [s1, s2] }
       r = Ray (Point 0 0 5) (Vec 0 0 1)
       i = Intersection 4 s2

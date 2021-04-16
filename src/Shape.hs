@@ -5,50 +5,55 @@ import qualified Data.SortedList as SL
 import Material (Material, defaultMaterial)
 import Ray (Ray (..), position, transform)
 import Transformation (Transformation, identity, inverse, mpMult, mvMult, scaling, translation)
-import VecPoint (Point (Point), Vec (Vec), dot, normalize, pSub, vNeg, vMult, epsilon, vpAdd)
+import VecPoint (Point (Point), Vec (Vec), dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd)
 
 {- Shape ADT -}
-data Shape
-  = Sphere {spMaterial :: Material, spTransform :: Transformation}
-  | Plane {plMaterial :: Material, plTransfrom :: Transformation}
-  deriving (Show, Eq)
+data Shape = Shape
+  { localIntersect :: Shape -> Ray -> Intersections,
+    localNormalAt :: Point -> Vec,
+    material :: Material,
+    transform :: Transformation
+  }
+
+instance Show Shape where
+  show (Shape _ _ m t) = unwords [show m, show t]
+
+instance Eq Shape where
+  (Shape _ _ m1 t1) == (Shape _ _ m2 t2) = m1 == m2 && t1 == t2
 
 -- Main shape functions:
 intersect :: Shape -> Ray -> Intersections
-intersect s@(Sphere material transform) ray 
+intersect shape@(Shape localIntersect _ _ transform) ray =
+  let localRay = Ray.transform ray (inverse transform)
+   in localIntersect shape localRay
+
+normalAt :: Shape -> Point -> Vec
+normalAt (Shape _ localNormalAt _ transform) point =
+  let inverseTransform = inverse transform
+      localPoint = inverseTransform `mpMult` point
+      localNormal = localNormalAt localPoint
+      worldNormal = transpose inverseTransform `mvMult` localNormal
+   in normalize worldNormal
+
+{- Spheres -}
+defaultSphere :: Shape
+defaultSphere = Shape sphereIntersect sphereNormalAt defaultMaterial identity
+
+sphereIntersect :: Shape -> Ray -> Intersections
+sphereIntersect sphere (Ray origin direction)
   | d < 0 = SL.toSortedList []
   | otherwise = SL.toSortedList [t1, t2]
   where
-    (Ray origin direction) = Ray.transform ray (inverse transform)
     sphereToRay = origin `pSub` Point 0 0 0 -- sphere is by default centered at origin
     a = direction `dot` direction
     b = 2 * (direction `dot` sphereToRay)
     c = (sphereToRay `dot` sphereToRay) - 1
     d = (b ^ 2) - (4 * a * c)
-    t1 = Intersection (((- b) - sqrt d) / (2 * a)) s
-    t2 = Intersection (((- b) + sqrt d) / (2 * a)) s
-intersect (Plane material transform) ray = undefined
+    t1 = Intersection (((- b) - sqrt d) / (2 * a)) sphere
+    t2 = Intersection (((- b) + sqrt d) / (2 * a)) sphere
 
-normalAt :: Shape -> Point -> Vec
-normalAt s@(Sphere material transform) point = 
-  let inverseTransform = inverse transform
-      objectPoint = inverseTransform `mpMult` point
-      objectNormal = objectPoint `pSub` Point 0 0 0
-      worldNormal = transpose inverseTransform `mvMult` objectNormal
-   in normalize worldNormal
-normalAt (Plane material transform) point = undefined 
-
--- Helpers:
-getMaterial :: Shape -> Material
-getMaterial (Sphere m _) = m
-getMaterial (Plane m _) = m
-
-getTransform :: Shape -> Transformation
-getTransform (Sphere _ t) = t
-getTransform (Plane _ t) = t
-
-defaultSphere :: Shape
-defaultSphere = Sphere defaultMaterial identity
+sphereNormalAt :: Point -> Vec
+sphereNormalAt (Point x y z) = Vec x y z
 
 {- Intersection ADT -}
 data Intersection = Intersection Float Shape deriving (Show, Eq) -- t value, intersected object

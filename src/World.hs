@@ -5,7 +5,7 @@ import Data.SortedList as SL (fromSortedList)
 import Light (PointLight (..), lighting)
 import Material (Material (..), defaultMaterial)
 import Ray (Ray (Ray))
-import Shape (Computation (..), Intersection (..), Intersections, Shape (..), getMaterial, defaultSphere, hit, intersect, prepareComputation)
+import Shape (Computation (..), Intersection (..), Intersections, Shape (..), defaultSphere, hit, intersect, prepareComputation)
 import Transformation (scaling)
 import VecPoint (Point (Point), Vec (Vec), magnitude, normalize, pSub)
 
@@ -14,8 +14,8 @@ data World = World {lights :: [PointLight], objects :: [Shape]}
 defaultWorld :: World
 defaultWorld =
   let lights = [PointLight (Point (-10) 10 (-10)) (Color 1 1 1)]
-      s1 = defaultSphere {spMaterial = defaultMaterial {color = Color 0.8 1.0 0.6, diffuse = 0.7, specular = 0.2}}
-      s2 = defaultSphere {spTransform = scaling 0.5 0.5 0.5}
+      s1 = defaultSphere {material = defaultMaterial {color = Color 0.8 1.0 0.6, diffuse = 0.7, specular = 0.2}}
+      s2 = defaultSphere {transform = scaling 0.5 0.5 0.5}
       objects = [s1, s2]
    in World lights objects
 
@@ -26,9 +26,8 @@ intersect (World _ objects) r = mconcat $ map (`Shape.intersect` r) objects
 shadeHit :: World -> Computation -> Color
 -- blend the colors produced by the hits of each light source in the world
 shadeHit w@(World lights _) (Computation _ _ object point eyev normalv overPoint) =
-  let material = getMaterial object
-      applyLighting light =
-        lighting material light point eyev normalv (isShadowed w overPoint light)
+  let applyLighting light =
+        lighting (material object) light point eyev normalv (isShadowed w overPoint light)
       colors = map applyLighting lights
       blend (Color r1 g1 b1) (Color r2 g2 b2) =
         Color (max r1 r2) (max g1 g2) (max b1 b2)

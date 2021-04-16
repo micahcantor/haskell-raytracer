@@ -8,7 +8,7 @@ import VecPoint (Point (Point), Vec (Vec), epsilon)
 import Shape
     ( Computation(Computation, over, point),
       Intersection(Intersection),
-      Shape(spTransform),
+      Shape(..),
       headSL,
       atSL,
       hit,
@@ -77,7 +77,7 @@ testIntersectionBehind = TestCase $ do
 testIntersectionScaled :: Test
 testIntersectionScaled = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      s = defaultSphere {spTransform = scaling 2 2 2}
+      s = defaultSphere {transform = scaling 2 2 2}
       xs = s `intersect` r
   assertEqual "first" (Intersection 3 s) (headSL xs)
   assertEqual "second" (Intersection 7 s) (xs `atSL` 1)
@@ -85,7 +85,7 @@ testIntersectionScaled = TestCase $ do
 testIntersectionTranslated :: Test
 testIntersectionTranslated = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      s = defaultSphere {spTransform = translation 5 0 0}
+      s = defaultSphere {transform = translation 5 0 0}
       xs = s `intersect` r
   assertEqual "length" (length xs) 0
 
@@ -122,7 +122,7 @@ testPrepareComputationInside = TestCase $ do
 testPrepareComputationOffset :: Test
 testPrepareComputationOffset = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      shape = defaultSphere {spTransform = translation 0 0 1}
+      shape = defaultSphere {transform = translation 0 0 1}
       i = Intersection 5 shape
       comps = prepareComputation r i
       (Point _ _ overZ) = over comps
