@@ -55,6 +55,22 @@ sphereIntersect sphere (Ray origin direction)
 sphereNormalAt :: Point -> Vec
 sphereNormalAt (Point x y z) = Vec x y z
 
+{- Planes -}
+
+defaultPlane :: Shape
+defaultPlane = Shape planeIntersect planeNormalAt defaultMaterial identity
+
+planeIntersect :: Shape -> Ray -> Intersections
+planeIntersect plane (Ray (Point _ originY _) (Vec _ directionY _)) 
+  | abs directionY < epsilon = SL.toSortedList [] -- if y component of vec is zero, parallel to xz plane
+  | otherwise = toIntersections [Intersection t plane]
+  where
+    t = -originY / directionY
+
+planeNormalAt :: Point -> Vec
+-- constant normal of the xz-plane, other planes obtained through transformaiton
+planeNormalAt _ = Vec 0 1 0 
+
 {- Intersection ADT -}
 data Intersection = Intersection Float Shape deriving (Show, Eq) -- t value, intersected object
 
@@ -68,6 +84,9 @@ headSL xs = head $ SL.fromSortedList xs
 
 atSL :: Intersections -> Int -> Intersection
 xs `atSL` i = head $ SL.fromSortedList $ SL.drop i xs
+
+toIntersections :: [Intersection] -> Intersections
+toIntersections = SL.toSortedList
 
 hit :: Intersections -> Maybe Intersection
 -- returns the first nonzero intersection, if it exists
@@ -98,5 +117,5 @@ prepareComputation r@(Ray origin direction) (Intersection t object) =
         | normalDotEye < 0 = vNeg normalv
         | otherwise = normalv
       inside = normalDotEye < 0
-      overPoint = point `vpAdd` ((25 * epsilon) `vMult` newNormalv)
+      overPoint = point `vpAdd` ((200 * epsilon) `vMult` newNormalv)
    in Computation inside t object point eyev newNormalv overPoint

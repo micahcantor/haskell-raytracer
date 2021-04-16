@@ -1,6 +1,6 @@
 module Main where
 
-import Exercises.Chapter7 (runChapter7)
+import Exercises.Chapter9 (runChapter9)
 
 main :: IO ()
-main = runChapter7 
+main = runChapter9 

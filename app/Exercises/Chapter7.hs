@@ -5,28 +5,28 @@ import Camera
     defaultCamera,
     render,
   )
-import qualified Camera (Camera(transform))
+import qualified Camera (Camera (transform))
 import Canvas (Canvas, writeCanvas)
 import Color (Color (Color))
 import Light (PointLight (PointLight))
 import Material (Material (color, diffuse, specular), defaultMaterial)
-import Shape ( Shape(material, transform), defaultSphere )
+import Shape (Shape (material, transform), defaultSphere)
 import Transformation (rotationX, rotationY, scaling, translation, viewTransform)
 import VecPoint (Point (Point), Vec (Vec))
 import World (World (..), defaultWorld)
 
 drawScene :: Canvas
-drawScene =
-  render camera world
+drawScene = render camera world
   where
-    world = 
-      defaultWorld 
+    world =
+      defaultWorld
         { lights = [PointLight (Point (-10) 10 (-10)) (Color 1 1 1), PointLight (Point 10 10 (-10)) (Color 1 1 1)],
-          objects = [floor, leftWall, rightWall, middle, left, right]}
+          objects = [floor, leftWall, rightWall, middle, left, right]
+        }
     camera =
       defaultCamera
-        { hSize = 700,
-          vSize = 525,
+        { hSize = 100,
+          vSize = 75,
           fov = pi / 3,
           Camera.transform = viewTransform (Point 0 1.5 (-5)) (Point 0 1 0) (Vec 0 1 0)
         }
