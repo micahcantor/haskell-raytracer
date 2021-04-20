@@ -1,18 +1,12 @@
 module Color where
 
-import VecPoint (approxEq)
-
-data Color = Color Float Float Float deriving (Show)
+import Types (Color (..))
 
 toPPM :: Int -> Color -> String
 toPPM maxColor (Color r g b) =
   unwords $ map (show . roundTo maxColor . round) [r, g, b]
   where
     roundTo x n = if n > x then x else n
-
-instance Eq Color where
-  (Color r1 g1 b1) == (Color r2 g2 b2) =
-    approxEq r1 r2 && approxEq g1 g2 && approxEq b1 b2
 
 cAdd :: Color -> Color -> Color
 cAdd (Color r1 g1 b1) (Color r2 g2 b2) = Color (r1 + r2) (b1 + b2) (g1 + g2)

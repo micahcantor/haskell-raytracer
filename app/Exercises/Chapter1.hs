@@ -1,6 +1,7 @@
 module Exercises.Chapter1 where
 
-import VecPoint ( Point(..), Vec(..), vAdd, vpAdd, normalize, dot )
+import VecPoint ( vAdd, vpAdd, normalize, dot )
+import Types ( Point(..), Vec(..) )
 
 {- Exercise: Putting it together -}
 data Projectile = Projectile {position :: Point, velocity :: Vec }

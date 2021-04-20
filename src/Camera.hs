@@ -1,18 +1,17 @@
 module Camera where
 
-import Canvas (Canvas, initCanvas)
-import Ray (Ray (..))
-import Transformation (Transformation, identity, inverse, mpMult)
-import VecPoint (Point (Point), normalize, pSub)
-import World (World, colorAt)
+import Canvas (initCanvas)
 import Data.Matrix (mapPos)
-
-data Camera = Camera
-  { hSize :: Int,
-    vSize :: Int,
-    fov :: Float,
-    transform :: Transformation
-  }
+import Transformation (identity, inverse, mpMult)
+import Types
+  ( Camera (Camera),
+    Canvas,
+    Point (Point),
+    Ray (..),
+    World,
+  )
+import VecPoint (normalize, pSub)
+import World (colorAt)
 
 defaultCamera :: Camera
 defaultCamera = Camera 160 120 (pi / 2) identity

@@ -1,10 +1,9 @@
 module Exercises.Chapter4 where
 
-import Canvas ( Canvas, initCanvas, canvasWidth, writeCanvas )
-import VecPoint ( Point(Point) )
+import Types ( Point(Point), Color(Color), Canvas )
+import Canvas ( initCanvas, canvasWidth, writeCanvas )
 import Transformation
     ( mpMult, scaling, translation, rotationY, setPixels )
-import Color ( Color(Color) )
 
 {- Putting it together -}
 plotClock :: Canvas -> Canvas

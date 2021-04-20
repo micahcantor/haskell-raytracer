@@ -1,19 +1,9 @@
 module VecPoint where
 
-data Vec = Vec Float Float Float deriving (Show)
+import Types (Point (..), Vec (..))
 
-data Point = Point Float Float Float deriving (Show)
-
-instance Eq Vec where
-  (Vec x1 y1 z1) == (Vec x2 y2 z2) =
-    approxEq x1 x2 && approxEq y1 y2 && approxEq z1 z2
-
-instance Eq Point where
-  (Point x1 y1 z1) == (Point x2 y2 z2) =
-    approxEq x1 x2 && approxEq y1 y2 && approxEq z1 z2
-
-approxEq :: Float -> Float -> Bool
-approxEq a b = a - b < 0.00001
+epsilon :: Float
+epsilon = 0.00001
 
 {- Point functions -}
 pAdd :: Point -> Point -> Vec

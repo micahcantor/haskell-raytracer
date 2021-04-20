@@ -7,7 +7,7 @@ import Transformation
     translation,
     viewTransform,
   )
-import VecPoint (Point (Point), Vec (Vec))
+import Types ( Point(Point), Vec(Vec) )
 
 testViewTransformDefault :: Test
 testViewTransformDefault = TestCase $ do

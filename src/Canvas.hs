@@ -1,10 +1,9 @@
 module Canvas where
 
-import Color (Color (..), cMult, toPPM)
+import Types ( Color(..), Canvas )
+import Color ( cMult, toPPM )
 import Data.Matrix (Matrix (..), matrix, setElem, toLists, getElem)
 import System.IO (IOMode (WriteMode), hPutStrLn, withFile)
-
-type Canvas = Matrix Color
 
 initCanvas :: Int -> Int -> Canvas
 initCanvas width height = matrix height width (\_ -> Color 0 0 0)

@@ -1,10 +1,8 @@
 module Ray where
 
-import Transformation (Transformation, mpMult, mvMult)
-import VecPoint (Point (..), Vec (..), vMult, vpAdd)
-
-data Ray = Ray Point Vec -- origin, direction
-  deriving (Show, Eq)
+import Types ( Point, Transformation, Ray(..) )
+import Transformation (mpMult, mvMult)
+import VecPoint (vMult, vpAdd)
 
 position :: Ray -> Float -> Point
 position (Ray origin direction) t = origin `vpAdd` (t `vMult` direction)
