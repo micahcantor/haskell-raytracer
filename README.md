@@ -12,5 +12,5 @@ Currently I have implemented the code through chapter 9, planes.
 
 ## Rendered Examples:
 ![Shaded Sphere](demo/shaded-sphere.png)
-![Three Spheres](demo/three-spheres.png)
 ![Three Spheres with Plane](demo/three-spheres-plane.png)
+![Three Spheres with Patterns](demo/three-patterned-spheres.png)

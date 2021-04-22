@@ -37,7 +37,7 @@ shadeHit :: World -> Computation -> Color
 -- blend the colors produced by the hits of each light source in the world
 shadeHit w@(World lights _) (Computation _ _ object point eyev normalv overPoint) =
   let applyLighting light =
-        lighting (material object) light point eyev normalv (isShadowed w overPoint light)
+        lighting (material object) object light point eyev normalv (isShadowed w overPoint light)
       colors = map applyLighting lights
       blend (Color r1 g1 b1) (Color r2 g2 b2) =
         Color (max r1 r2) (max g1 g2) (max b1 b2)

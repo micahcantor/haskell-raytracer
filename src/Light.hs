@@ -1,23 +1,27 @@
 module Light where
 
-import Types
-    ( Material(color, pattern, ambient, diffuse, shininess, specular),
-      Point,
-      Vec,
-      PointLight(position, intensity),
-      Color )
 import Color (cAdd, cMult, hadamard)
-import Material (defaultMaterial, stripeAt, black)
+import Material (black, defaultMaterial, patternAtShape)
+import Types
+  ( Color,
+    Material (ambient, color, diffuse, pattern, shininess, specular),
+    Pattern (..),
+    Point,
+    PointLight (intensity, position),
+    Vec,
+    Shape(..)
+  )
 import VecPoint (dot, normalize, pSub, reflect, vNeg)
 
-lighting :: Material -> PointLight -> Point -> Vec -> Vec -> Bool -> Color
-lighting material light point eyev normalv inShadow =
+lighting :: Material -> Shape -> PointLight -> Point -> Vec -> Vec -> Bool -> Color
+lighting material shape light point eyev normalv inShadow =
   ambientLight `cAdd` diffuseLight `cAdd` specularLight
   where
     -- find color of surface if the material is patterned
+    p@(Pattern colors _ _) = pattern material
     color'
-      | null (pattern material) = color material
-      | otherwise = stripeAt (pattern material) point
+      | null colors = color material
+      | otherwise = patternAtShape p shape point
     -- combine surface color and light's color
     effectiveColor = color' `hadamard` intensity light
     -- find the direction to the light source

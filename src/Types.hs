@@ -2,8 +2,8 @@ module Types where
 
 {- Declares types for export to avoid cyclic module annoyances -}
 
-import Data.Matrix ( Matrix )
-import Data.SortedList as SL ( SortedList, toSortedList )
+import Data.Matrix (Matrix)
+import Data.SortedList as SL (SortedList, toSortedList)
 
 {- VECPOINT -}
 data Vec = Vec Float Float Float deriving (Show)
@@ -20,11 +20,13 @@ instance Eq Point where
 
 approxEq :: Float -> Float -> Bool
 approxEq a b = a - b < 0.00001
+
 {- END VECPOINT -}
 
 {- RAY -}
 data Ray = Ray Point Vec -- origin, direction
   deriving (Show, Eq)
+
 {- END RAY -}
 
 {- COLOR -}
@@ -33,10 +35,12 @@ data Color = Color Float Float Float deriving (Show)
 instance Eq Color where
   (Color r1 g1 b1) == (Color r2 g2 b2) =
     approxEq r1 r2 && approxEq g1 g2 && approxEq b1 b2
+
 {- END COLOR -}
 
 {- CANVAS -}
 type Canvas = Matrix Color
+
 {- END CANVAS -}
 
 {- CAMERA -}
@@ -46,6 +50,7 @@ data Camera = Camera
     fov :: Float,
     camTransform :: Transformation
   }
+
 {- END CAMERA -}
 
 {- SHAPES -}
@@ -82,6 +87,7 @@ data Computation = Computation
     over :: Point
   }
   deriving (Eq)
+
 {- END SHAPES -}
 
 {- MATERIAL -}
@@ -95,19 +101,30 @@ data Material = Material
   }
   deriving (Show, Eq)
 
-type Pattern = [Color]
+data Pattern = Pattern
+  { colors :: [Color],
+    patTransform :: Transformation,
+    colorAt :: Pattern -> Point -> Color
+  }
+
+instance Show Pattern where
+  show (Pattern c t _) = unwords [show c, show t]
+
+instance Eq Pattern where
+  (Pattern c1 t1 _) == (Pattern c2 t2 _) = c1 == c2 && t1 == t2
 {- END MATERIAL -}
 
 {- LIGHT -}
 data PointLight = PointLight {position :: Point, intensity :: Color}
+
 {- END LIGHT -}
 
 {- TRANSFORMATION -}
 type Transformation = Matrix Float
+
 {- END TRANSFORMATION -}
 
 {- WORLD -}
 data World = World {lights :: [PointLight], objects :: [Shape]}
+
 {- END WORLD -}
-
-
