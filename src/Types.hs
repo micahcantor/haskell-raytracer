@@ -84,6 +84,7 @@ data Computation = Computation
     point :: Point,
     eye :: Vec,
     normal :: Vec,
+    reflect :: Vec,
     over :: Point
   }
   deriving (Eq)
@@ -97,6 +98,7 @@ data Material = Material
     diffuse :: Float,
     specular :: Float,
     shininess :: Float,
+    reflective :: Float,
     pattern :: Pattern
   }
   deriving (Show, Eq)

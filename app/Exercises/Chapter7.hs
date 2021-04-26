@@ -30,8 +30,8 @@ drawScene = render camera world
         }
     camera =
       defaultCamera
-        { hSize = 100,
-          vSize = 75,
+        { hSize = 800,
+          vSize = 600,
           fov = pi / 3,
           camTransform = viewTransform (Point 0 1.5 (-5)) (Point 0 1 0) (Vec 0 1 0)
         }

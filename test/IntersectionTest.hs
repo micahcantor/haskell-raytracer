@@ -2,11 +2,11 @@ module IntersectionTest (tests) where
 
 import qualified Data.SortedList as SL
 import Intersection ( headSL, atSL, hit, prepareComputation )
-import Shape ( intersect, defaultSphere )
+import Shape ( intersect, defaultSphere, defaultPlane )
 import Test.HUnit (Test (..), assertBool, assertEqual)
 import Transformation (scaling, translation)
 import Types
-  ( Computation (Computation, over, point),
+  ( Computation (Computation, over, point, reflect),
     Intersection (Intersection),
     Point (Point),
     Ray (Ray),
@@ -93,7 +93,7 @@ testPrepareComputation = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       shape = defaultSphere
       i@(Intersection t object) = Intersection 4 shape
-      (Computation inside compT compObj point eye normal _) = prepareComputation r i
+      (Computation inside compT compObj point eye normal _ _) = prepareComputation r i
   assertEqual
     "equality"
     (False, t, object, Point 0 0 (-1), Vec 0 0 (-1), Vec 0 0 (-1))
@@ -104,7 +104,7 @@ testPrepareComputationOutside = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       shape = defaultSphere
       i = Intersection 4 shape
-      (Computation inside _ _ _ _ _ _) = prepareComputation r i
+      (Computation inside _ _ _ _ _ _ _) = prepareComputation r i
   assertEqual "equality" False inside
 
 testPrepareComputationInside :: Test
@@ -112,7 +112,7 @@ testPrepareComputationInside = TestCase $ do
   let r = Ray (Point 0 0 0) (Vec 0 0 1)
       shape = defaultSphere
       i@(Intersection _ object) = Intersection 1 shape
-      (Computation inside t obj point eye normal _) = prepareComputation r i
+      (Computation inside t obj point eye normal _ _) = prepareComputation r i
   assertEqual
     "equality"
     (True, t, object, Point 0 0 1, Vec 0 0 (-1), Vec 0 0 (-1))
@@ -130,6 +130,14 @@ testPrepareComputationOffset = TestCase $ do
     "the hit should offset the point"
     (overZ < (- epsilon) / 2 && intersectZ > overZ)
 
+testPrepareComputationReflection :: Test
+testPrepareComputationReflection = TestCase $ do
+  let shape = defaultPlane 
+      r = Ray (Point 0 1 (-1)) (Vec 0 ((- sqrt 2) / 2) (sqrt 2 / 2))
+      i = Intersection (sqrt 2) shape
+      reflectv = reflect (prepareComputation r i)
+  assertEqual "precomputing the reflection vector" (Vec 0 (sqrt 2 / 2) (sqrt 2 / 2)) reflectv
+
 tests :: Test
 tests =
   TestList
@@ -145,5 +153,6 @@ tests =
       testPrepareComputation,
       testPrepareComputationOutside,
       testPrepareComputationInside,
-      testPrepareComputationOffset
+      testPrepareComputationOffset,
+      testPrepareComputationReflection
     ]

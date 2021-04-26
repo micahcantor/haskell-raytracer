@@ -7,11 +7,8 @@ import Light (lighting)
 import Material (defaultMaterial)
 import Ray (position)
 import VecPoint (normalize, pSub, vNeg)
-import Shape
-    (intersect,
-      normalAt,
-      hit,
-      defaultSphere )
+import Shape (intersect, normalAt, defaultSphere )
+import Intersection ( hit )
 import Types
     ( Shape(material),
       Intersection(Intersection),
@@ -37,7 +34,7 @@ drawSphere canvas =
                 let point = Ray.position r t
                     normal = normalAt sphereHit point
                     eye = vNeg direction
-                 in lighting material light point eye normal False
+                 in lighting material sphere light point eye normal False
               Nothing -> black
     )
     canvas

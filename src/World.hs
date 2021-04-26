@@ -1,23 +1,24 @@
 module World where
 
-import Color (cAdd)
+import Color (cAdd, cMult)
 import Data.SortedList as SL (fromSortedList)
 import Intersection (hit, prepareComputation)
 import Light (lighting)
-import Material (defaultMaterial)
+import Material (defaultMaterial, black)
 import Shape (defaultSphere, intersect)
 import Transformation (scaling)
 import Types
   ( Color (..),
-    Computation (Computation),
+    Computation (..),
     Intersection (Intersection),
     Intersections,
-    Material (color, diffuse, specular),
+    Material (color, diffuse, specular, reflective),
     Point (..),
     PointLight (PointLight),
     Ray (..),
     Shape (material, transform),
-    World (World),
+    World (..),
+    Vec(..)
   )
 import VecPoint (magnitude, normalize, pSub)
 
@@ -29,27 +30,32 @@ defaultWorld =
       objects = [s1, s2]
    in World lights objects
 
+maxRecursions :: Int
+maxRecursions = 4
+
 intersect :: World -> Ray -> Intersections
 -- combine the intersections of each object in world with ray
 intersect (World _ objects) r = mconcat $ map (`Shape.intersect` r) objects
 
-shadeHit :: World -> Computation -> Color
+shadeHit :: World -> Computation -> Int -> Color
 -- blend the colors produced by the hits of each light source in the world
-shadeHit w@(World lights _) (Computation _ _ object point eyev normalv overPoint) =
+shadeHit w@(World lights _) comps@(Computation _ _ object point eyev normalv reflectv overPoint) remaining =
   let applyLighting light =
-        lighting (material object) object light point eyev normalv (isShadowed w overPoint light)
+        let surface = lighting (material object) object light point eyev normalv (isShadowed w overPoint light)
+            reflected = reflectedColor w comps remaining
+         in surface `cAdd` reflected
       colors = map applyLighting lights
       blend (Color r1 g1 b1) (Color r2 g2 b2) =
         Color (max r1 r2) (max g1 g2) (max b1 b2)
    in foldr1 blend colors
 
-colorAt :: World -> Ray -> Color
-colorAt w r =
+colorAt :: World -> Ray -> Int -> Color
+colorAt world ray remaining =
   let black = Color 0 0 0
-      intersections = w `World.intersect` r
+      intersections = world `World.intersect` ray
    in case hit intersections of
         Nothing -> black
-        Just intersection -> shadeHit w (prepareComputation r intersection)
+        Just intersection -> shadeHit world (prepareComputation ray intersection) remaining
 
 isShadowed :: World -> Point -> PointLight -> Bool
 -- calculate intersections from a given point to all lights in world,
@@ -63,3 +69,15 @@ isShadowed world point (PointLight lightPos _) =
    in case hit intersections of
         Nothing -> False
         Just (Intersection t _) -> t < distance
+
+reflectedColor :: World -> Computation -> Int -> Color
+-- spawns a new reflection ray when intersected material is reflective
+-- remaining argument limits the number of recursions to avoid infinite loops
+reflectedColor w comps remaining
+  | remaining < 1 = black
+  | matReflective == 0 = black
+  | otherwise = matReflective `cMult` color
+  where
+    matReflective = reflective $ material $ object comps
+    reflectRay = Ray (over comps) (reflect comps)
+    color = colorAt w reflectRay (remaining - 1)

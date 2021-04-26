@@ -11,7 +11,7 @@ import Types
     World,
   )
 import VecPoint (normalize, pSub)
-import World (colorAt)
+import World (colorAt, maxRecursions)
 
 defaultCamera :: Camera
 defaultCamera = Camera 160 120 (pi / 2) identity
@@ -49,5 +49,5 @@ render :: Camera -> World -> Canvas
 render camera@(Camera hSize vSize _ _) world =
   let canvas = initCanvas hSize vSize
    in mapPos
-        (\(y, x) _ -> colorAt world (rayForPixel camera x y))
+        (\(y, x) _ -> colorAt world (rayForPixel camera x y) maxRecursions)
         canvas

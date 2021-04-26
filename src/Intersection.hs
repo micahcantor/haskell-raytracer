@@ -15,7 +15,7 @@ import Types
     Intersections,
     Ray (..),
   )
-import VecPoint (dot, epsilon, vMult, vNeg, vpAdd)
+import VecPoint (dot, reflect, epsilon, vMult, vNeg, vpAdd)
 
 headSL :: Intersections -> Intersection
 headSL xs = head $ SL.fromSortedList xs
@@ -39,6 +39,7 @@ prepareComputation r@(Ray origin direction) (Intersection t object) =
       newNormalv
         | normalDotEye < 0 = vNeg normalv
         | otherwise = normalv
+      reflectv = reflect direction newNormalv
       inside = normalDotEye < 0
       overPoint = point `vpAdd` ((200 * epsilon) `vMult` newNormalv)
-   in Computation inside t object point eyev newNormalv overPoint
+   in Computation inside t object point eyev newNormalv reflectv overPoint
