@@ -1,17 +1,19 @@
 module IntersectionTest (tests) where
 
 import qualified Data.SortedList as SL
-import Intersection ( headSL, atSL, hit, prepareComputation )
-import Shape ( intersect, defaultSphere, defaultPlane )
+import Intersection (atSL, headSL, hit, prepareComputation)
+import Shape (defaultPlane, defaultSphere, glassSphere, intersect)
 import Test.HUnit (Test (..), assertBool, assertEqual)
 import Transformation (scaling, translation)
 import Types
-  ( Computation (Computation, over, point, reflect),
+  ( Computation (..),
     Intersection (Intersection),
+    Material (..),
     Point (Point),
     Ray (Ray),
-    Shape (transform),
+    Shape (material, transform),
     Vec (Vec),
+    toIntersections,
   )
 import VecPoint (epsilon)
 
@@ -93,7 +95,7 @@ testPrepareComputation = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       shape = defaultSphere
       i@(Intersection t object) = Intersection 4 shape
-      (Computation inside compT compObj point eye normal _ _) = prepareComputation r i
+      (Computation inside compT compObj point eye normal _ _ _ _ _) = prepareComputation r i (toIntersections [i])
   assertEqual
     "equality"
     (False, t, object, Point 0 0 (-1), Vec 0 0 (-1), Vec 0 0 (-1))
@@ -104,15 +106,15 @@ testPrepareComputationOutside = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       shape = defaultSphere
       i = Intersection 4 shape
-      (Computation inside _ _ _ _ _ _ _) = prepareComputation r i
-  assertEqual "equality" False inside
+      ins = inside $ prepareComputation r i (toIntersections [i])
+  assertEqual "equality" False ins
 
 testPrepareComputationInside :: Test
 testPrepareComputationInside = TestCase $ do
   let r = Ray (Point 0 0 0) (Vec 0 0 1)
       shape = defaultSphere
       i@(Intersection _ object) = Intersection 1 shape
-      (Computation inside t obj point eye normal _ _) = prepareComputation r i
+      (Computation inside t obj point eye normal _ _ _ _ _) = prepareComputation r i (toIntersections [i])
   assertEqual
     "equality"
     (True, t, object, Point 0 0 1, Vec 0 0 (-1), Vec 0 0 (-1))
@@ -123,7 +125,7 @@ testPrepareComputationOffset = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       shape = defaultSphere {transform = translation 0 0 1}
       i = Intersection 5 shape
-      comps = prepareComputation r i
+      comps = prepareComputation r i (toIntersections [i])
       (Point _ _ overZ) = over comps
       (Point _ _ intersectZ) = point comps
   assertBool
@@ -132,11 +134,35 @@ testPrepareComputationOffset = TestCase $ do
 
 testPrepareComputationReflection :: Test
 testPrepareComputationReflection = TestCase $ do
-  let shape = defaultPlane 
+  let shape = defaultPlane
       r = Ray (Point 0 1 (-1)) (Vec 0 ((- sqrt 2) / 2) (sqrt 2 / 2))
       i = Intersection (sqrt 2) shape
-      reflectv = reflect (prepareComputation r i)
+      reflectv = reflect (prepareComputation r i (toIntersections [i]))
   assertEqual "precomputing the reflection vector" (Vec 0 (sqrt 2 / 2) (sqrt 2 / 2)) reflectv
+
+testFindN1AndN2 :: Test
+testFindN1AndN2 = TestCase $ do
+  let a = glassSphere {transform = scaling 2 2 2}
+      b = glassSphere {transform = translation 0 0 (-0.25), material = (material glassSphere) {refractiveIndex = 2.0}}
+      c = glassSphere {transform = translation 0 0 0.25, material = (material glassSphere) {refractiveIndex = 2.5}}
+      r = Ray (Point 0 0 (-4)) (Vec 0 0 1)
+      xs = toIntersections $ map (uncurry Intersection) [(2, a), (2.75, b), (3.25, c), (4.75, b), (5.25, c), (6, a)]
+      allComps = map (\i -> prepareComputation r i xs) (SL.fromSortedList xs)
+      (n1s, n2s) = (map n1 allComps, map n2 allComps)
+  assertEqual "finding n1 at various intersections" [1.0, 1.5, 2.0, 2.5, 2.5, 1.5] n1s
+  assertEqual "finding n2 at various intersections" [1.5, 2.0, 2.5, 2.5, 1.5, 1.0] n2s
+
+testComputeUnderPoint :: Test
+testComputeUnderPoint = TestCase $ do
+  let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
+      shape = glassSphere {transform = translation 0 0 1}
+      i = Intersection 5 shape
+      xs = toIntersections [i]
+      comps = prepareComputation r i xs
+      (Point _ _ underZ) = under comps
+      (Point _ _ pointZ) = point comps
+  assertBool "under point goes under" (underZ > epsilon / 2)
+  assertBool "uner point is under surface" (pointZ < underZ)
 
 tests :: Test
 tests =
@@ -154,5 +180,7 @@ tests =
       testPrepareComputationOutside,
       testPrepareComputationInside,
       testPrepareComputationOffset,
-      testPrepareComputationReflection
+      testPrepareComputationReflection,
+      testFindN1AndN2,
+      testComputeUnderPoint
     ]

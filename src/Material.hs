@@ -5,7 +5,7 @@ import Transformation (identity, inverse, mpMult)
 import Types (Color (..), Material (Material), Pattern (..), Point (..), Shape (..))
 
 defaultMaterial :: Material
-defaultMaterial = Material (Color 1 1 1) 0.1 0.9 0.9 200 0 defaultPattern
+defaultMaterial = Material (Color 1 1 1) 0.1 0.9 0.9 200 0.0 1.0 0 defaultPattern
 
 defaultPattern :: Pattern
 defaultPattern = Pattern [] identity (\_ (Point x y z) -> Color x y z)
@@ -56,3 +56,7 @@ checkerAt :: Pattern -> Point -> Color
 checkerAt (Pattern (c1 : c2 : _) _ _) (Point x y z)
   | even (floor x + floor y + floor z) = c1
   | otherwise = c2
+
+{- A pattern used in some tests -}
+testPattern :: Pattern
+testPattern = defaultPattern {colorAt = \_ (Point x y z) -> Color x y z}

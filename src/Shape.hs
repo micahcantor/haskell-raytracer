@@ -2,13 +2,14 @@ module Shape where
 
 import Data.Matrix (transpose)
 import Types
-    ( Shape(Shape),
+    ( Shape(..),
       Intersections,
       Intersection(..),
       Computation(Computation),
       Point(..),
       Vec(..),
       Ray(..),
+      Material(..),
       toIntersections )
 import qualified Data.SortedList as SL
 import Transformation (identity, inverse, mpMult, mvMult, scaling, translation)
@@ -33,6 +34,9 @@ normalAt (Shape _ localNormalAt _ transform) point =
 {- Spheres -}
 defaultSphere :: Shape
 defaultSphere = Shape sphereIntersect sphereNormalAt defaultMaterial identity
+
+glassSphere :: Shape
+glassSphere = defaultSphere {material = defaultMaterial {transparency = 1.0, refractiveIndex = 1.5}}
 
 sphereIntersect :: Shape -> Ray -> Intersections
 sphereIntersect sphere (Ray origin direction)

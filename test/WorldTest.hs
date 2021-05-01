@@ -1,23 +1,25 @@
 module WorldTest (tests) where
 
 import Data.SortedList as SL (fromSortedList)
-import Intersection (prepareComputation)
-import Shape (defaultSphere, defaultPlane)
+import Intersection (atSL, headSL, prepareComputation)
+import Material (black, defaultMaterial, defaultPattern, testPattern)
+import Shape (defaultPlane, defaultSphere)
 import Test.HUnit (Test (..), assertEqual, assertString)
 import Transformation (translation)
 import Types
   ( Color (Color),
     Intersection (Intersection),
+    Material (..),
+    Pattern,
     Point (Point),
     PointLight (PointLight),
     Ray (Ray),
     Shape (..),
-    Material(..),
     Vec (Vec),
     World (..),
+    toIntersections,
   )
-import Material ( defaultMaterial, black )
-import World (colorAt, defaultWorld, intersect, isShadowed, shadeHit, reflectedColor, maxRecursions)
+import World (colorAt, defaultWorld, intersect, isShadowed, maxRecursions, reflectedColor, refractedColor, shadeHit)
 
 testIntersect :: Test
 testIntersect = TestCase $ do
@@ -32,7 +34,7 @@ testShadeHit = TestCase $ do
       r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       shape = head $ objects w
       i = Intersection 4 shape
-      comps = prepareComputation r i
+      comps = prepareComputation r i (toIntersections [i])
   assertEqual "equality" (Color 0.38066 0.47583 0.2855) (shadeHit w comps maxRecursions)
 
 testShadeHit_ :: String
@@ -41,8 +43,8 @@ testShadeHit_ =
       r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       shape = head $ objects w
       i = Intersection 4 shape
-      comps = prepareComputation r i
-   in show (shadeHit w comps maxRecursions )
+      comps = prepareComputation r i (toIntersections [i])
+   in show (shadeHit w comps maxRecursions)
 
 testShadeHitInside :: Test
 testShadeHitInside = TestCase $ do
@@ -50,7 +52,7 @@ testShadeHitInside = TestCase $ do
       r = Ray (Point 0 0 0) (Vec 0 0 1)
       shape = objects w !! 1
       i = Intersection 0.5 shape
-      comps = prepareComputation r i
+      comps = prepareComputation r i (toIntersections [i])
   assertEqual "equality" (Color 0.90498 0.90498 0.90498) (shadeHit w comps maxRecursions)
 
 testShadeHitInShadow :: Test
@@ -60,7 +62,7 @@ testShadeHitInShadow = TestCase $ do
       w = defaultWorld {lights = [PointLight (Point 0 0 (-10)) (Color 1 1 1)], objects = [s1, s2]}
       r = Ray (Point 0 0 5) (Vec 0 0 1)
       i = Intersection 4 s2
-      comps = prepareComputation r i
+      comps = prepareComputation r i (toIntersections [i])
   assertEqual "in shadow" (Color 0.1 0.1 0.1) (shadeHit w comps maxRecursions)
 
 testShadeHitReflective :: Test
@@ -69,7 +71,7 @@ testShadeHitReflective = TestCase $ do
       w = defaultWorld {objects = [shape]}
       r = Ray (Point 0 0 (-3)) (Vec 0 (- sqrt 2 / 2) (sqrt 2 / 2))
       i = Intersection (sqrt 2) shape
-      comps = prepareComputation r i
+      comps = prepareComputation r i (toIntersections [i])
   assertEqual "shading reflective material" (Color 0.87677 0.92436 0.82918) (shadeHit w comps maxRecursions)
 
 testColorAtMiss :: Test
@@ -114,11 +116,11 @@ testIsShadowedInFrontSphere = TestCase $ do
 
 testReflectedColorNonReflective :: Test
 testReflectedColorNonReflective = TestCase $ do
-  let w@(World _ (s1 : s2 : _)) = defaultWorld 
+  let w@(World _ (s1 : s2 : _)) = defaultWorld
       r = Ray (Point 0 0 0) (Vec 0 0 1)
       shape = s2 {material = defaultMaterial {ambient = 1}}
       i = Intersection 1 shape
-      comps = prepareComputation r i
+      comps = prepareComputation r i (toIntersections [i])
   assertEqual "reflected color for nonreflective" black (reflectedColor w comps maxRecursions)
 
 testReflectedColorReflective :: Test
@@ -127,7 +129,7 @@ testReflectedColorReflective = TestCase $ do
       shape = defaultPlane {material = defaultMaterial {reflective = 0.5}, transform = translation 0 (-1) 0}
       i = Intersection (sqrt 2) shape
       w = defaultWorld {objects = [shape]}
-      comps = prepareComputation r i
+      comps = prepareComputation r i (toIntersections [i])
   assertEqual "reflected color for reflective surface" (Color 0.19032 0.2379 0.14274) (reflectedColor w comps maxRecursions)
 
 testReflectedColorLimitedRecursion :: Test
@@ -136,17 +138,64 @@ testReflectedColorLimitedRecursion = TestCase $ do
       shape = defaultPlane {material = defaultMaterial {reflective = 0.5}, transform = translation 0 (-1) 0}
       i = Intersection (sqrt 2) shape
       w = defaultWorld {objects = [shape]}
-      comps = prepareComputation r i
+      comps = prepareComputation r i (toIntersections [i])
       remaining = 0
   assertEqual "reflected color with 0 remaining recursions" (Color 0.19032 0.2379 0.14274) (reflectedColor w comps remaining)
 
-{- testColorAtMutuallyReflective :: Test
-testColorAtMutuallyReflective = TestCase $ do
-  let lower = defaultPlane {material = defaultMaterial {reflective = 1}, transform = translation 0 (-1) 0}
-      upper = defaultPlane {material = defaultMaterial {reflective = 1}, transform = translation 0 1 0}
-      w = defaultWorld {lights = [PointLight (Point 0 0 0) (Color 1 1 1)], objects = [lower, upper]}
-      r = Ray (Point 0 0 0) (Vec 0 1 0)
-  assert t -}
+testRefractedColorOpaque :: Test
+testRefractedColorOpaque = TestCase $ do
+  let shape = defaultSphere
+      w = defaultWorld {objects = [shape]}
+      r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
+      xs = toIntersections [Intersection 4 shape, Intersection 6 shape]
+      comps = prepareComputation r (headSL xs) xs
+  assertEqual "refracted color of opaque surface" (Color 0 0 0) (refractedColor w comps 5)
+
+testRefractedColorMaxRecursion :: Test
+testRefractedColorMaxRecursion = TestCase $ do
+  let shape = defaultSphere {material = defaultMaterial {transparency = 1.0, refractiveIndex = 1.5}}
+      w = defaultWorld {objects = [shape]}
+      r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
+      xs = toIntersections [Intersection 4 shape, Intersection 6 shape]
+      comps = prepareComputation r (headSL xs) xs
+  assertEqual "refracted color at max recursions" (Color 0 0 0) (refractedColor w comps 0)
+
+testRefractedColorInternalReflection :: Test
+testRefractedColorInternalReflection = TestCase $ do
+  let shape = defaultSphere {material = defaultMaterial {transparency = 1.0, refractiveIndex = 1.5}}
+      w = defaultWorld {objects = [shape]}
+      r = Ray (Point 0 0 (sqrt 2 / 2)) (Vec 0 1 0)
+      xs = toIntersections [Intersection (- sqrt 2 / 2) shape, Intersection (sqrt 2 / 2) shape]
+      comps = prepareComputation r (xs `atSL` 1) xs
+  assertEqual "refracted color with internal reflection" (Color 0 0 0) (refractedColor w comps 5)
+
+testRefractedColorRefraction :: Test
+testRefractedColorRefraction = TestCase $ do
+  let a = defaultSphere {material = defaultMaterial {ambient = 1.0, pattern = testPattern}}
+      b = defaultSphere {material = defaultMaterial {transparency = 1.0, refractiveIndex = 1.5}}
+      w = defaultWorld {objects = [a, b]}
+      r = Ray (Point 0 0 0.1) (Vec 0 1 0)
+      xs = toIntersections [Intersection (-0.9899) a, Intersection (-0.4899) b, Intersection 0.4899 b, Intersection 0.9899 a]
+      comps = prepareComputation r (xs `atSL` 2) xs
+  assertEqual "refracted color at max recursions" (Color 0 0.99888 0.04725) (refractedColor w comps 5)
+
+testShadeHitRefraction :: Test
+testShadeHitRefraction = TestCase $ do
+  let floor =
+        defaultPlane
+          { transform = translation 0 (-1) 0,
+            material = defaultMaterial {transparency = 0.5, refractiveIndex = 1.5}
+          }
+      ball = 
+        defaultSphere
+          { transform = translation 0 (-3.5) (-0.5),
+            material = defaultMaterial {color = Color 1 0 0, ambient = 0.5}
+          }
+      w = defaultWorld {objects = [floor, ball]}
+      r = Ray (Point 0 0 (-3)) (Vec 0 (- sqrt 2 / 2) (sqrt 2 / 2))
+      xs = toIntersections [Intersection (sqrt 2) floor]
+      comps = prepareComputation r (headSL xs) xs
+  assertEqual "shading transparent material" (Color 0.93642 0.68642 0.68642) (shadeHit w comps 5)
 
 tests :: Test
 tests =
@@ -163,5 +212,9 @@ tests =
       testIsShadowedInFrontLight,
       testIsShadowedInFrontSphere,
       testReflectedColorNonReflective,
-      testReflectedColorReflective
+      testReflectedColorReflective,
+      testRefractedColorMaxRecursion,
+      testRefractedColorInternalReflection,
+      testRefractedColorRefraction,
+      testShadeHitRefraction
     ]
