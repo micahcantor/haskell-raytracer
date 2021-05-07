@@ -9,7 +9,7 @@ import Types
 import Light (lighting)
 import Material (white, black, stripePattern, defaultMaterial)
 import Shape ( defaultSphere )
-import Test.HUnit (Test (..), assertEqual)
+import Test.HUnit (Test (..), assertEqual, runTestTT)
 
 testLightingBetween :: Test
 testLightingBetween = TestCase $ do
@@ -75,7 +75,7 @@ testLightingInShadow = TestCase $ do
       light = PointLight (Point 0 0 (-10)) (Color 1 1 1)
       inShadow = True
       result = lighting m defaultSphere light pos eyev normalv inShadow
-  assertEqual "between" (Color 1.9 1.9 1.9) result
+  assertEqual "between when in shadow" (Color 0.1 0.1 0.1) result
 
 testLightingPattern :: Test
 testLightingPattern = TestCase $ do

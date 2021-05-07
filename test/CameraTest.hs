@@ -22,7 +22,7 @@ testRayForPixelCorner :: Test
 testRayForPixelCorner = TestCase $ do
   let c = defaultCamera {hSize = 201, vSize = 101}
       r = rayForPixel c 0 0
-  assertEqual "corner" (Ray (Point 0 0 0) (Vec 0.66519 0.33259 (-0.66519))) r
+  assertEqual "corner" (Ray (Point 0 0 0) (Vec 0.66519 0.33259 (-0.66851))) r
 
 testRayForPixelTransformed :: Test
 testRayForPixelTransformed = TestCase $ do

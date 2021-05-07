@@ -1,6 +1,6 @@
 module MaterialTest where
 
-import Material (black, checkerPattern, defaultPattern, gradientPattern, patternAtShape, ringPattern, stripeAt, stripePattern, white)
+import Material (black, checkerPattern, defaultPattern, gradientPattern, patternAtShape, ringPattern, stripeAt, stripePattern, white, testPattern)
 import Shape (defaultSphere)
 import Test.HUnit (Test (..), assertEqual)
 import Transformation (scaling, translation)
@@ -46,19 +46,19 @@ testCheckerAt = TestCase $ do
 testPatternAtShape :: Test
 testPatternAtShape = TestCase $ do
   let sphere = defaultSphere {transform = scaling 2 2 2}
-      pat = defaultPattern
-   in assertEqual "pattern with shape transform" white (patternAtShape pat sphere (Point 1.5 0 0))
+      pat = testPattern
+   in assertEqual "pattern with shape transform" (Color 1 1.5 2) (patternAtShape pat sphere (Point 2 3 4))
 
 testPatternAtShapePatternTransform :: Test
 testPatternAtShapePatternTransform = TestCase $ do
   let sphere = defaultSphere
-      pat = defaultPattern {patTransform = scaling 2 2 2}
+      pat = testPattern {patTransform = scaling 2 2 2}
    in assertEqual "pattern with pattern transform" (Color 1 1.5 2) (patternAtShape pat sphere (Point 2 3 4))
 
 testPatternAtBothTransform :: Test
 testPatternAtBothTransform = TestCase $ do
   let sphere = defaultSphere {transform = scaling 2 2 2}
-      pat = defaultPattern {patTransform = translation 0.5 1 1.5}
+      pat = testPattern {patTransform = translation 0.5 1 1.5}
    in assertEqual "pattern with shape and pattern transform" (Color 0.75 0.5 0.25) (patternAtShape pat sphere (Point 2.5 3 3.5))
 
 tests :: Test

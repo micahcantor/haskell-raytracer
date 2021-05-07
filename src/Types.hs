@@ -19,7 +19,7 @@ instance Eq Point where
     approxEq x1 x2 && approxEq y1 y2 && approxEq z1 z2
 
 approxEq :: Float -> Float -> Bool
-approxEq a b = a - b < 0.00001
+approxEq a b = abs (a - b) < 0.0001
 
 {- END VECPOINT -}
 
@@ -103,7 +103,7 @@ data Material = Material
     shininess :: Float,
     reflective :: Float,
     transparency :: Float,
-    refractiveIndex :: Float,
+    refractive :: Float,
     pattern :: Pattern
   }
   deriving (Show, Eq)
