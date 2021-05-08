@@ -6,9 +6,9 @@ import Data.Matrix (Matrix)
 import Data.SortedList as SL (SortedList, toSortedList)
 
 {- VECPOINT -}
-data Vec = Vec Float Float Float deriving (Show)
+data Vec = Vec Double Double Double deriving (Show)
 
-data Point = Point Float Float Float deriving (Show)
+data Point = Point Double Double Double deriving (Show)
 
 instance Eq Vec where
   (Vec x1 y1 z1) == (Vec x2 y2 z2) =
@@ -18,7 +18,7 @@ instance Eq Point where
   (Point x1 y1 z1) == (Point x2 y2 z2) =
     approxEq x1 x2 && approxEq y1 y2 && approxEq z1 z2
 
-approxEq :: Float -> Float -> Bool
+approxEq :: Double -> Double -> Bool
 approxEq a b = abs (a - b) < 0.0001
 
 {- END VECPOINT -}
@@ -30,7 +30,7 @@ data Ray = Ray Point Vec -- origin, direction
 {- END RAY -}
 
 {- COLOR -}
-data Color = Color Float Float Float deriving (Show)
+data Color = Color Double Double Double deriving (Show)
 
 instance Eq Color where
   (Color r1 g1 b1) == (Color r2 g2 b2) =
@@ -47,7 +47,7 @@ type Canvas = Matrix Color
 data Camera = Camera
   { hSize :: Int,
     vSize :: Int,
-    fov :: Float,
+    fov :: Double,
     camTransform :: Transformation
   }
 
@@ -62,12 +62,12 @@ data Shape = Shape
   }
 
 instance Show Shape where
-  show (Shape _ _ m t) = unwords [show m, show t]
+  show (Shape _ _ m _) = show m
 
 instance Eq Shape where
   (Shape _ _ m1 t1) == (Shape _ _ m2 t2) = m1 == m2 && t1 == t2
 
-data Intersection = Intersection Float Shape deriving (Show, Eq) -- t value, intersected object
+data Intersection = Intersection Double Shape deriving (Show, Eq) -- t value, intersected object
 
 instance Ord Intersection where
   (Intersection t1 _) <= (Intersection t2 _) = t1 <= t2
@@ -79,7 +79,7 @@ toIntersections = SL.toSortedList
 
 data Computation = Computation
   { inside :: Bool,
-    t :: Float,
+    t :: Double,
     object :: Shape,
     point :: Point,
     eye :: Vec,
@@ -87,8 +87,8 @@ data Computation = Computation
     reflect :: Vec,
     over :: Point,
     under :: Point,
-    n1 :: Float,
-    n2 :: Float
+    n1 :: Double,
+    n2 :: Double
   }
   deriving (Show, Eq)
 
@@ -97,13 +97,13 @@ data Computation = Computation
 {- MATERIAL -}
 data Material = Material
   { color :: Color,
-    ambient :: Float,
-    diffuse :: Float,
-    specular :: Float,
-    shininess :: Float,
-    reflective :: Float,
-    transparency :: Float,
-    refractive :: Float,
+    ambient :: Double,
+    diffuse :: Double,
+    specular :: Double,
+    shininess :: Double,
+    reflective :: Double,
+    transparency :: Double,
+    refractive :: Double,
     pattern :: Pattern
   }
   deriving (Show, Eq)
@@ -115,7 +115,7 @@ data Pattern = Pattern
   }
 
 instance Show Pattern where
-  show (Pattern c t _) = unwords [show c, show t]
+  show (Pattern c _ _) = show c
 
 instance Eq Pattern where
   (Pattern c1 t1 _) == (Pattern c2 t2 _) = c1 == c2 && t1 == t2
@@ -127,7 +127,7 @@ data PointLight = PointLight {position :: Point, intensity :: Color}
 {- END LIGHT -}
 
 {- TRANSFORMATION -}
-type Transformation = Matrix Float
+type Transformation = Matrix Double
 
 {- END TRANSFORMATION -}
 

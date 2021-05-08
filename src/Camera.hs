@@ -16,7 +16,7 @@ import World (colorAt, maxRecursions)
 defaultCamera :: Camera
 defaultCamera = Camera 160 120 (pi / 2) identity
 
-viewHalfDimensions :: Camera -> (Float, Float)
+viewHalfDimensions :: Camera -> (Double, Double)
 viewHalfDimensions (Camera hSize vSize fov _) =
   let halfView = tan (fov / 2)
       aspect = fromIntegral hSize / fromIntegral vSize
@@ -28,7 +28,7 @@ viewHalfDimensions (Camera hSize vSize fov _) =
         | otherwise = halfView
    in (halfWidth, halfHeight)
 
-pixelSize :: Int -> Float -> Float
+pixelSize :: Int -> Double -> Double
 pixelSize hSize halfWidth = (halfWidth * 2) / fromIntegral hSize
 
 rayForPixel :: Camera -> Int -> Int -> Ray

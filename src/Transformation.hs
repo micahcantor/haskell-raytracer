@@ -49,30 +49,30 @@ mvMult m v = toVec (m * fromVec v)
 identity :: Transformation
 identity = M.identity 4
 
-scaling :: Float -> Float -> Float -> Transformation
+scaling :: Double -> Double -> Double -> Transformation
 scaling x y z = diagonalList 4 0 [x, y, z, 1]
 
-translation :: Float -> Float -> Float -> Transformation
+translation :: Double -> Double -> Double -> Transformation
 translation x y z =
   let values = [(x, (1, 4)), (y, (2, 4)), (z, (3, 4))]
    in setElems values identity
 
-rotationX :: Float -> Transformation
+rotationX :: Double -> Transformation
 rotationX r =
   let values = [(cos r, (3, 3)), (- sin r, (2, 3)), (sin r, (3, 2)), (cos r, (2, 2))]
    in setElems values identity
 
-rotationY :: Float -> Transformation
+rotationY :: Double -> Transformation
 rotationY r =
   let values = [(cos r, (1, 1)), (- sin r, (3, 1)), (sin r, (1, 3)), (cos r, (3, 3))]
    in setElems values identity
 
-rotationZ :: Float -> Transformation
+rotationZ :: Double -> Transformation
 rotationZ r =
   let values = [(cos r, (1, 1)), (- sin r, (3, 1)), (sin r, (2, 1)), (cos r, (2, 2))]
    in setElems values identity
 
-shearing :: Float -> Float -> Float -> Float -> Float -> Float -> Transformation
+shearing :: Double -> Double -> Double -> Double -> Double -> Double -> Transformation
 shearing xy xz yx yz zx zy =
   let values =
         [ (xy, (1, 2)),
