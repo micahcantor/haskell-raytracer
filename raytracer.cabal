@@ -20,12 +20,13 @@ library
   -- other-modules:
   -- other-extensions:
   build-depends:       base ^>=4.14.1.0, matrix, sorted-list, mtl
+  extensions: NamedFieldPuns
   hs-source-dirs:      src
   default-language:    Haskell2010
 
 executable raytracer
   main-is:             Main.hs
-  other-modules:       Exercises.Chapter10
+  other-modules:       Exercises.Chapter11
   -- other-extensions:
   build-depends:       base ^>=4.14.1.0, raytracer, matrix
   hs-source-dirs:      app
@@ -47,5 +48,5 @@ test-suite raytracer-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Main.hs
-  other-modules:       CameraTest, IntersectionTest, LightTest, MaterialTest, RayTest, ShapeTest, TransformationTest, VecPointTest, WorldTest
+  other-modules:       CameraTest, CanvasTest, ColorTest, IntersectionTest, LightTest, MaterialTest, RayTest, ShapeTest, TransformationTest, VecPointTest, WorldTest
   build-depends:       base ^>=4.14.1.0, test-framework, test-framework-hunit, HUnit, sorted-list, raytracer
