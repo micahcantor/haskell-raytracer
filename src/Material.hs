@@ -2,10 +2,24 @@ module Material where
 
 import Color (cAdd, cMult, cSub)
 import Transformation (identity, inverse, mpMult)
-import Types (Color (..), Material (Material), Pattern (..), Point (..), Shape (..))
+import Types (Color (..), Material (..), Pattern (..), Point (..), Shape (..))
 
 defaultMaterial :: Material
-defaultMaterial = Material (Color 1 1 1) 0.1 0.9 0.9 200 0.0 1.0 0 defaultPattern
+defaultMaterial =
+  Material
+    { color = Color 1 1 1,
+      ambient = 0.1,
+      diffuse = 0.9,
+      specular = 0.9,
+      shininess = 200,
+      reflective = 0.0,
+      refractive = 1.0,
+      transparency = 0,
+      pattern = defaultPattern
+    }
+
+glass :: Material
+glass = defaultMaterial {transparency = 1.0, refractive = 1.5}
 
 defaultPattern :: Pattern
 defaultPattern = Pattern [] identity (\_ (Point x y z) -> Color x y z)

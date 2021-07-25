@@ -14,7 +14,7 @@ import Types
 import qualified Data.SortedList as SL
 import Transformation (identity, inverse, mpMult, mvMult, scaling, translation)
 import VecPoint (dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd)
-import Material ( defaultMaterial )
+import Material ( defaultMaterial, glass )
 import Ray ( transform )
 
 -- Main shape functions:
@@ -36,7 +36,7 @@ defaultSphere :: Shape
 defaultSphere = Shape sphereIntersect sphereNormalAt defaultMaterial identity
 
 glassSphere :: Shape
-glassSphere = defaultSphere {material = defaultMaterial {transparency = 1.0, refractiveIndex = 1.5}}
+glassSphere = defaultSphere {material = glass}
 
 sphereIntersect :: Shape -> Ray -> Intersections
 sphereIntersect sphere (Ray origin direction)
