@@ -1,7 +1,7 @@
 module IntersectionTest (tests) where
 
 import qualified Data.SortedList as SL
-import Intersection (atSL, headSL, hit, prepareComputation)
+import Intersection (atSL, headSL, hit, prepareComputation, schlick)
 import Shape (defaultPlane, defaultSphere, glassSphere, intersect)
 import Test.HUnit (Test (..), assertBool, assertEqual)
 import Transformation (scaling, translation)
@@ -13,7 +13,7 @@ import Types
     Ray (Ray),
     Shape (material, transform),
     Vec (Vec),
-    toIntersections,
+    toIntersections, approxEq
   )
 import VecPoint (epsilon)
 
@@ -143,8 +143,8 @@ testPrepareComputationReflection = TestCase $ do
 testFindN1AndN2 :: Test
 testFindN1AndN2 = TestCase $ do
   let a = glassSphere {transform = scaling 2 2 2}
-      b = glassSphere {transform = translation 0 0 (-0.25), material = (material glassSphere) {refractiveIndex = 2.0}}
-      c = glassSphere {transform = translation 0 0 0.25, material = (material glassSphere) {refractiveIndex = 2.5}}
+      b = glassSphere {transform = translation 0 0 (-0.25), material = (material glassSphere) {refractive = 2.0}}
+      c = glassSphere {transform = translation 0 0 0.25, material = (material glassSphere) {refractive = 2.5}}
       r = Ray (Point 0 0 (-4)) (Vec 0 0 1)
       xs = toIntersections $ map (uncurry Intersection) [(2, a), (2.75, b), (3.25, c), (4.75, b), (5.25, c), (6, a)]
       allComps = map (\i -> prepareComputation r i xs) (SL.fromSortedList xs)
@@ -164,6 +164,33 @@ testComputeUnderPoint = TestCase $ do
   assertBool "under point goes under" (underZ > epsilon / 2)
   assertBool "uner point is under surface" (pointZ < underZ)
 
+testSchlickTotalInternal :: Test 
+testSchlickTotalInternal = TestCase $ do
+  let shape = glassSphere
+      r = Ray (Point 0 0 (sqrt 2 / 2)) (Vec 0 1 0)
+      xs = toIntersections [Intersection (- sqrt 2 / 2) shape, Intersection (sqrt 2 / 2) shape]
+      comps = prepareComputation r (xs `atSL` 1) xs
+      reflectance = schlick comps
+  assertEqual "schlick approximation for total internal reflection" 1.0 reflectance
+
+testSchlickPerpendicular :: Test
+testSchlickPerpendicular = TestCase $ do
+  let shape = glassSphere
+      r = Ray (Point 0 0 0) (Vec 0 1 0)
+      xs = toIntersections [Intersection (-1) shape, Intersection 1 shape]
+      comps = prepareComputation r (xs `atSL` 1) xs
+      reflectance = schlick comps
+  assertBool "schlick approximation for perpendicular reflection" (abs (reflectance - 0.04) < epsilon)
+
+testSchlickN2GreaterN1 :: Test
+testSchlickN2GreaterN1 = TestCase $ do
+  let shape = glassSphere
+      r = Ray (Point 0 0.99 (-2)) (Vec 0 0 1)
+      xs = toIntersections [Intersection 1.8589 shape]
+      comps = prepareComputation r (headSL xs) xs
+      reflectance = schlick comps
+  assertBool "schlick approximation for when n2 > n1" (approxEq reflectance 0.48873)
+
 tests :: Test
 tests =
   TestList
@@ -182,5 +209,8 @@ tests =
       testPrepareComputationOffset,
       testPrepareComputationReflection,
       testFindN1AndN2,
-      testComputeUnderPoint
+      testComputeUnderPoint,
+      testSchlickTotalInternal,
+      testSchlickPerpendicular,
+      testSchlickN2GreaterN1
     ]

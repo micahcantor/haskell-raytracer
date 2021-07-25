@@ -4,7 +4,7 @@ import Data.SortedList as SL (fromSortedList)
 import Intersection (atSL, headSL, prepareComputation)
 import Material (black, defaultMaterial, defaultPattern, testPattern)
 import Shape (defaultPlane, defaultSphere)
-import Test.HUnit (Test (..), assertEqual, assertString)
+import Test.HUnit (Test (..), assertEqual, runTestTT)
 import Transformation (translation)
 import Types
   ( Color (Color),
@@ -26,7 +26,7 @@ testIntersect = TestCase $ do
   let w = defaultWorld
       r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       xs = w `intersect` r
-  assertEqual "list equal" [4, 4.5, 5.5, 6] [t | (Intersection t _) <- SL.fromSortedList xs]
+  assertEqual "intersecting world with ray" [4, 4.5, 5.5, 6] [t | (Intersection t _) <- SL.fromSortedList xs]
 
 testShadeHit :: Test
 testShadeHit = TestCase $ do
@@ -35,16 +35,7 @@ testShadeHit = TestCase $ do
       shape = head $ objects w
       i = Intersection 4 shape
       comps = prepareComputation r i (toIntersections [i])
-  assertEqual "equality" (Color 0.38066 0.47583 0.2855) (shadeHit w comps maxRecursions)
-
-testShadeHit_ :: String
-testShadeHit_ =
-  let w = defaultWorld
-      r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      shape = head $ objects w
-      i = Intersection 4 shape
-      comps = prepareComputation r i (toIntersections [i])
-   in show (shadeHit w comps maxRecursions)
+  assertEqual "shading a hit" (Color 0.38066 0.47583 0.2855) (shadeHit w comps maxRecursions)
 
 testShadeHitInside :: Test
 testShadeHitInside = TestCase $ do
@@ -53,7 +44,7 @@ testShadeHitInside = TestCase $ do
       shape = objects w !! 1
       i = Intersection 0.5 shape
       comps = prepareComputation r i (toIntersections [i])
-  assertEqual "equality" (Color 0.90498 0.90498 0.90498) (shadeHit w comps maxRecursions)
+  assertEqual "shading from inside an object" (Color 0.90498 0.90498 0.90498) (shadeHit w comps maxRecursions)
 
 testShadeHitInShadow :: Test
 testShadeHitInShadow = TestCase $ do
@@ -63,12 +54,12 @@ testShadeHitInShadow = TestCase $ do
       r = Ray (Point 0 0 5) (Vec 0 0 1)
       i = Intersection 4 s2
       comps = prepareComputation r i (toIntersections [i])
-  assertEqual "in shadow" (Color 0.1 0.1 0.1) (shadeHit w comps maxRecursions)
+  assertEqual "shading in shadow" (Color 0.1 0.1 0.1) (shadeHit w comps maxRecursions)
 
 testShadeHitReflective :: Test
 testShadeHitReflective = TestCase $ do
   let shape = defaultPlane {material = defaultMaterial {reflective = 0.5}, transform = translation 0 (-1) 0}
-      w = defaultWorld {objects = [shape]}
+      w = defaultWorld {objects = shape : objects defaultWorld}
       r = Ray (Point 0 0 (-3)) (Vec 0 (- sqrt 2 / 2) (sqrt 2 / 2))
       i = Intersection (sqrt 2) shape
       comps = prepareComputation r i (toIntersections [i])
@@ -78,41 +69,41 @@ testColorAtMiss :: Test
 testColorAtMiss = TestCase $ do
   let w = defaultWorld
       r = Ray (Point 0 0 (-5)) (Vec 0 1 0)
-  assertEqual "miss" (Color 0 0 0) (colorAt w r maxRecursions)
+  assertEqual "colorAt miss" (Color 0 0 0) (colorAt w r maxRecursions)
 
 testColorAtHit :: Test
 testColorAtHit = TestCase $ do
   let w = defaultWorld
       r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-  assertEqual "hit" (Color 0.38066 0.47583 0.2855) (colorAt w r maxRecursions)
+  assertEqual "colorAt a hit" (Color 0.38066 0.47583 0.2855) (colorAt w r maxRecursions)
 
 testIsShadowedNotColinear :: Test
 testIsShadowedNotColinear = TestCase $ do
   let w = defaultWorld
       p = Point 0 10 0
       light = head (lights w)
-  assertEqual "not colinear" False (isShadowed w p light)
+  assertEqual "isShadowed colinear" False (isShadowed w p light)
 
 testIsShadowedIsBehindSphere :: Test
 testIsShadowedIsBehindSphere = TestCase $ do
   let w = defaultWorld
       p = Point 10 (-10) 10
       light = head (lights w)
-  assertEqual "is between sphere and light" True (isShadowed w p light)
+  assertEqual "isShadowed between sphere and light" True (isShadowed w p light)
 
 testIsShadowedInFrontLight :: Test
 testIsShadowedInFrontLight = TestCase $ do
   let w = defaultWorld
       p = Point (-20) 20 (-20)
       light = head (lights w)
-  assertEqual "is in front of light" False (isShadowed w p light)
+  assertEqual "isShadowed in front of light" False (isShadowed w p light)
 
 testIsShadowedInFrontSphere :: Test
 testIsShadowedInFrontSphere = TestCase $ do
   let w = defaultWorld
       p = Point (-2) 2 (-2)
       light = head (lights w)
-  assertEqual "is in front of sphere" False (isShadowed w p light)
+  assertEqual "isShadowed in front of sphere" False (isShadowed w p light)
 
 testReflectedColorNonReflective :: Test
 testReflectedColorNonReflective = TestCase $ do
@@ -128,7 +119,7 @@ testReflectedColorReflective = TestCase $ do
   let r = Ray (Point 0 0 (-3)) (Vec 0 (- sqrt 2 / 2) (sqrt 2 / 2))
       shape = defaultPlane {material = defaultMaterial {reflective = 0.5}, transform = translation 0 (-1) 0}
       i = Intersection (sqrt 2) shape
-      w = defaultWorld {objects = [shape]}
+      w = defaultWorld {objects = shape : objects defaultWorld}
       comps = prepareComputation r i (toIntersections [i])
   assertEqual "reflected color for reflective surface" (Color 0.19032 0.2379 0.14274) (reflectedColor w comps maxRecursions)
 
@@ -153,7 +144,7 @@ testRefractedColorOpaque = TestCase $ do
 
 testRefractedColorMaxRecursion :: Test
 testRefractedColorMaxRecursion = TestCase $ do
-  let shape = defaultSphere {material = defaultMaterial {transparency = 1.0, refractiveIndex = 1.5}}
+  let shape = defaultSphere {material = defaultMaterial {transparency = 1.0, refractive = 1.5}}
       w = defaultWorld {objects = [shape]}
       r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       xs = toIntersections [Intersection 4 shape, Intersection 6 shape]
@@ -162,7 +153,7 @@ testRefractedColorMaxRecursion = TestCase $ do
 
 testRefractedColorInternalReflection :: Test
 testRefractedColorInternalReflection = TestCase $ do
-  let shape = defaultSphere {material = defaultMaterial {transparency = 1.0, refractiveIndex = 1.5}}
+  let shape = defaultSphere {material = defaultMaterial {transparency = 1.0, refractive = 1.5}}
       w = defaultWorld {objects = [shape]}
       r = Ray (Point 0 0 (sqrt 2 / 2)) (Vec 0 1 0)
       xs = toIntersections [Intersection (- sqrt 2 / 2) shape, Intersection (sqrt 2 / 2) shape]
@@ -171,31 +162,50 @@ testRefractedColorInternalReflection = TestCase $ do
 
 testRefractedColorRefraction :: Test
 testRefractedColorRefraction = TestCase $ do
-  let a = defaultSphere {material = defaultMaterial {ambient = 1.0, pattern = testPattern}}
-      b = defaultSphere {material = defaultMaterial {transparency = 1.0, refractiveIndex = 1.5}}
+  let [s1, s2] = objects defaultWorld
+      a = s1 {material = defaultMaterial {ambient = 1.0, pattern = testPattern}}
+      b = s2 {material = defaultMaterial {transparency = 1.0, refractive = 1.5}}
       w = defaultWorld {objects = [a, b]}
       r = Ray (Point 0 0 0.1) (Vec 0 1 0)
       xs = toIntersections [Intersection (-0.9899) a, Intersection (-0.4899) b, Intersection 0.4899 b, Intersection 0.9899 a]
       comps = prepareComputation r (xs `atSL` 2) xs
-  assertEqual "refracted color at max recursions" (Color 0 0.99888 0.04725) (refractedColor w comps 5)
+  assertEqual "refracted color on refractive material" (Color 0 0.99888 0.04725) (refractedColor w comps 5)
 
 testShadeHitRefraction :: Test
 testShadeHitRefraction = TestCase $ do
   let floor =
         defaultPlane
           { transform = translation 0 (-1) 0,
-            material = defaultMaterial {transparency = 0.5, refractiveIndex = 1.5}
+            material = defaultMaterial {transparency = 0.5, refractive = 1.5}
           }
       ball = 
         defaultSphere
           { transform = translation 0 (-3.5) (-0.5),
             material = defaultMaterial {color = Color 1 0 0, ambient = 0.5}
           }
-      w = defaultWorld {objects = [floor, ball]}
+      w = defaultWorld {objects = objects defaultWorld ++ [floor, ball]}
       r = Ray (Point 0 0 (-3)) (Vec 0 (- sqrt 2 / 2) (sqrt 2 / 2))
       xs = toIntersections [Intersection (sqrt 2) floor]
       comps = prepareComputation r (headSL xs) xs
   assertEqual "shading transparent material" (Color 0.93642 0.68642 0.68642) (shadeHit w comps 5)
+
+testShadeHitReflectionRefraction :: Test
+testShadeHitReflectionRefraction = TestCase $ do
+  let floor =
+        defaultPlane
+          { transform = translation 0 (-1) 0,
+            material = defaultMaterial {transparency = 0.5, reflective = 0.5, refractive = 1.5}
+          }
+      ball = 
+        defaultSphere
+          { transform = translation 0 (-3.5) (-0.5),
+            material = defaultMaterial {color = Color 1 0 0, ambient = 0.5}
+          }
+      w = defaultWorld {objects = objects defaultWorld ++ [floor, ball]}
+      r = Ray (Point 0 0 (-3)) (Vec 0 (- sqrt 2 / 2) (sqrt 2 / 2))
+      xs = toIntersections [Intersection (sqrt 2) floor]
+      comps = prepareComputation r (headSL xs) xs
+  assertEqual "shading transparent and refractive material" (Color 0.93391 0.69643 0.69243) (shadeHit w comps 5)
 
 tests :: Test
 tests =
@@ -216,5 +226,6 @@ tests =
       testRefractedColorMaxRecursion,
       testRefractedColorInternalReflection,
       testRefractedColorRefraction,
-      testShadeHitRefraction
+      testShadeHitRefraction,
+      testShadeHitReflectionRefraction
     ]
