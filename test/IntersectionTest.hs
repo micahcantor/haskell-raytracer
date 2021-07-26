@@ -11,9 +11,9 @@ import Types
     Material (..),
     Point (Point),
     Ray (Ray),
-    Shape (material, transform),
+    Shape (..),
     Vec (Vec),
-    toIntersections, approxEq
+    toIntersections, approxEq, getMaterial
   )
 import VecPoint (epsilon)
 
@@ -23,7 +23,7 @@ testHitPos = TestCase $ do
       i1 = Intersection 1 s
       i2 = Intersection 2 s
       xs = SL.toSortedList [i1, i2]
-  assertEqual "first" (hit xs) (Just i1)
+  assertEqual "his position" (hit xs) (Just i1)
 
 testHitSomeNeg :: Test
 testHitSomeNeg = TestCase $ do
@@ -31,7 +31,7 @@ testHitSomeNeg = TestCase $ do
       i1 = Intersection (-1) s
       i2 = Intersection 2 s
       xs = SL.toSortedList [i1, i2]
-  assertEqual "second" (hit xs) (Just i2)
+  assertEqual "hit position some negative" (hit xs) (Just i2)
 
 testHitAllNeg :: Test
 testHitAllNeg = TestCase $ do
@@ -39,7 +39,7 @@ testHitAllNeg = TestCase $ do
       i1 = Intersection (-1) s
       i2 = Intersection (-2) s
       xs = SL.toSortedList [i1, i2]
-  assertEqual "nothing" (hit xs) Nothing
+  assertEqual "hit nothing" (hit xs) Nothing
 
 testHitMix :: Test
 testHitMix = TestCase $ do
@@ -49,44 +49,44 @@ testHitMix = TestCase $ do
       i3 = Intersection (-3) s
       i4 = Intersection 2 s
       xs = SL.toSortedList [i1, i2, i3, i4]
-  assertEqual "fourth" (hit xs) (Just i4)
+  assertEqual "hit a mix of interesections" (hit xs) (Just i4)
 
 testIntersectionTangent :: Test
 testIntersectionTangent = TestCase $ do
   let r = Ray (Point 0 1 (-5)) (Vec 0 0 1)
       s = defaultSphere
       xs = s `intersect` r
-  assertEqual "first" (Intersection 5.0 s) (headSL xs)
-  assertEqual "second" (Intersection 5.0 s) (xs `atSL` 1)
+  assertEqual "intersect at tangent (1)" (Intersection 5.0 s) (headSL xs)
+  assertEqual "intersect at tangent (2)" (Intersection 5.0 s) (xs `atSL` 1)
 
 testIntersectionInside :: Test
 testIntersectionInside = TestCase $ do
   let r = Ray (Point 0 0 0) (Vec 0 0 1)
       s = defaultSphere
       xs = s `intersect` r
-  assertEqual "first" (Intersection (-1.0) s) (headSL xs)
-  assertEqual "second" (Intersection 1.0 s) (xs `atSL` 1)
+  assertEqual "intersect inside sphere (1)" (Intersection (-1.0) s) (headSL xs)
+  assertEqual "intersect inside sphere (2)" (Intersection 1.0 s) (xs `atSL` 1)
 
 testIntersectionBehind :: Test
 testIntersectionBehind = TestCase $ do
   let r = Ray (Point 0 0 5) (Vec 0 0 1)
       s = defaultSphere
       xs = s `intersect` r
-  assertEqual "first" (Intersection (-6.0) s) (headSL xs)
-  assertEqual "second" (Intersection (-4.0) s) (xs `atSL` 1)
+  assertEqual "intersect behind sphere (1)" (Intersection (-6.0) s) (headSL xs)
+  assertEqual "intersect behind sphere (2)" (Intersection (-4.0) s) (xs `atSL` 1)
 
 testIntersectionScaled :: Test
 testIntersectionScaled = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      s = defaultSphere {transform = scaling 2 2 2}
+      s = defaultSphere {sphereTransform = scaling 2 2 2}
       xs = s `intersect` r
-  assertEqual "first" (Intersection 3 s) (headSL xs)
-  assertEqual "second" (Intersection 7 s) (xs `atSL` 1)
+  assertEqual "intersect at scaled sphere (1)" (Intersection 3 s) (headSL xs)
+  assertEqual "intersect at scaled sphere (2)" (Intersection 7 s) (xs `atSL` 1)
 
 testIntersectionTranslated :: Test
 testIntersectionTranslated = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      s = defaultSphere {transform = translation 5 0 0}
+      s = defaultSphere {sphereTransform = translation 5 0 0}
       xs = s `intersect` r
   assertEqual "length" (length xs) 0
 
@@ -123,7 +123,7 @@ testPrepareComputationInside = TestCase $ do
 testPrepareComputationOffset :: Test
 testPrepareComputationOffset = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      shape = defaultSphere {transform = translation 0 0 1}
+      shape = defaultSphere {sphereTransform = translation 0 0 1}
       i = Intersection 5 shape
       comps = prepareComputation r i (toIntersections [i])
       (Point _ _ overZ) = over comps
@@ -142,9 +142,9 @@ testPrepareComputationReflection = TestCase $ do
 
 testFindN1AndN2 :: Test
 testFindN1AndN2 = TestCase $ do
-  let a = glassSphere {transform = scaling 2 2 2}
-      b = glassSphere {transform = translation 0 0 (-0.25), material = (material glassSphere) {refractive = 2.0}}
-      c = glassSphere {transform = translation 0 0 0.25, material = (material glassSphere) {refractive = 2.5}}
+  let a = glassSphere {sphereTransform = scaling 2 2 2}
+      b = glassSphere {sphereTransform = translation 0 0 (-0.25), sphereMaterial = (getMaterial glassSphere) {refractive = 2.0}}
+      c = glassSphere {sphereTransform = translation 0 0 0.25, sphereMaterial = (getMaterial glassSphere) {refractive = 2.5}}
       r = Ray (Point 0 0 (-4)) (Vec 0 0 1)
       xs = toIntersections $ map (uncurry Intersection) [(2, a), (2.75, b), (3.25, c), (4.75, b), (5.25, c), (6, a)]
       allComps = map (\i -> prepareComputation r i xs) (SL.fromSortedList xs)
@@ -155,7 +155,7 @@ testFindN1AndN2 = TestCase $ do
 testComputeUnderPoint :: Test
 testComputeUnderPoint = TestCase $ do
   let r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-      shape = glassSphere {transform = translation 0 0 1}
+      shape = glassSphere {sphereTransform = translation 0 0 1}
       i = Intersection 5 shape
       xs = toIntersections [i]
       comps = prepareComputation r i xs

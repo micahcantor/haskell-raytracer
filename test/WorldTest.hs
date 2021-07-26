@@ -49,7 +49,7 @@ testShadeHitInside = TestCase $ do
 testShadeHitInShadow :: Test
 testShadeHitInShadow = TestCase $ do
   let s1 = defaultSphere
-      s2 = defaultSphere {transform = translation 0 0 10}
+      s2 = defaultSphere {sphereTransform = translation 0 0 10}
       w = defaultWorld {lights = [PointLight (Point 0 0 (-10)) (Color 1 1 1)], objects = [s1, s2]}
       r = Ray (Point 0 0 5) (Vec 0 0 1)
       i = Intersection 4 s2
@@ -58,7 +58,7 @@ testShadeHitInShadow = TestCase $ do
 
 testShadeHitReflective :: Test
 testShadeHitReflective = TestCase $ do
-  let shape = defaultPlane {material = defaultMaterial {reflective = 0.5}, transform = translation 0 (-1) 0}
+  let shape = defaultPlane {planeMaterial = defaultMaterial {reflective = 0.5}, planeTransform = translation 0 (-1) 0}
       w = defaultWorld {objects = shape : objects defaultWorld}
       r = Ray (Point 0 0 (-3)) (Vec 0 (- sqrt 2 / 2) (sqrt 2 / 2))
       i = Intersection (sqrt 2) shape
@@ -109,7 +109,7 @@ testReflectedColorNonReflective :: Test
 testReflectedColorNonReflective = TestCase $ do
   let w@(World _ (s1 : s2 : _)) = defaultWorld
       r = Ray (Point 0 0 0) (Vec 0 0 1)
-      shape = s2 {material = defaultMaterial {ambient = 1}}
+      shape = s2 {sphereMaterial = defaultMaterial {ambient = 1}}
       i = Intersection 1 shape
       comps = prepareComputation r i (toIntersections [i])
   assertEqual "reflected color for nonreflective" black (reflectedColor w comps maxRecursions)
@@ -117,7 +117,7 @@ testReflectedColorNonReflective = TestCase $ do
 testReflectedColorReflective :: Test
 testReflectedColorReflective = TestCase $ do
   let r = Ray (Point 0 0 (-3)) (Vec 0 (- sqrt 2 / 2) (sqrt 2 / 2))
-      shape = defaultPlane {material = defaultMaterial {reflective = 0.5}, transform = translation 0 (-1) 0}
+      shape = defaultPlane {planeMaterial = defaultMaterial {reflective = 0.5}, planeTransform = translation 0 (-1) 0}
       i = Intersection (sqrt 2) shape
       w = defaultWorld {objects = shape : objects defaultWorld}
       comps = prepareComputation r i (toIntersections [i])
@@ -126,7 +126,7 @@ testReflectedColorReflective = TestCase $ do
 testReflectedColorLimitedRecursion :: Test
 testReflectedColorLimitedRecursion = TestCase $ do
   let r = Ray (Point 0 0 (-3)) (Vec 0 (- sqrt 2 / 2) (sqrt 2 / 2))
-      shape = defaultPlane {material = defaultMaterial {reflective = 0.5}, transform = translation 0 (-1) 0}
+      shape = defaultPlane {planeMaterial = defaultMaterial {reflective = 0.5}, planeTransform = translation 0 (-1) 0}
       i = Intersection (sqrt 2) shape
       w = defaultWorld {objects = [shape]}
       comps = prepareComputation r i (toIntersections [i])
@@ -144,7 +144,7 @@ testRefractedColorOpaque = TestCase $ do
 
 testRefractedColorMaxRecursion :: Test
 testRefractedColorMaxRecursion = TestCase $ do
-  let shape = defaultSphere {material = defaultMaterial {transparency = 1.0, refractive = 1.5}}
+  let shape = defaultSphere {sphereMaterial = defaultMaterial {transparency = 1.0, refractive = 1.5}}
       w = defaultWorld {objects = [shape]}
       r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       xs = toIntersections [Intersection 4 shape, Intersection 6 shape]
@@ -153,7 +153,7 @@ testRefractedColorMaxRecursion = TestCase $ do
 
 testRefractedColorInternalReflection :: Test
 testRefractedColorInternalReflection = TestCase $ do
-  let shape = defaultSphere {material = defaultMaterial {transparency = 1.0, refractive = 1.5}}
+  let shape = defaultSphere {sphereMaterial = defaultMaterial {transparency = 1.0, refractive = 1.5}}
       w = defaultWorld {objects = [shape]}
       r = Ray (Point 0 0 (sqrt 2 / 2)) (Vec 0 1 0)
       xs = toIntersections [Intersection (- sqrt 2 / 2) shape, Intersection (sqrt 2 / 2) shape]
@@ -163,8 +163,8 @@ testRefractedColorInternalReflection = TestCase $ do
 testRefractedColorRefraction :: Test
 testRefractedColorRefraction = TestCase $ do
   let [s1, s2] = objects defaultWorld
-      a = s1 {material = defaultMaterial {ambient = 1.0, pattern = testPattern}}
-      b = s2 {material = defaultMaterial {transparency = 1.0, refractive = 1.5}}
+      a = s1 {sphereMaterial = defaultMaterial {ambient = 1.0, pattern = testPattern}}
+      b = s2 {sphereMaterial = defaultMaterial {transparency = 1.0, refractive = 1.5}}
       w = defaultWorld {objects = [a, b]}
       r = Ray (Point 0 0 0.1) (Vec 0 1 0)
       xs = toIntersections [Intersection (-0.9899) a, Intersection (-0.4899) b, Intersection 0.4899 b, Intersection 0.9899 a]
@@ -175,13 +175,13 @@ testShadeHitRefraction :: Test
 testShadeHitRefraction = TestCase $ do
   let floor =
         defaultPlane
-          { transform = translation 0 (-1) 0,
-            material = defaultMaterial {transparency = 0.5, refractive = 1.5}
+          { planeTransform = translation 0 (-1) 0,
+            planeMaterial = defaultMaterial {transparency = 0.5, refractive = 1.5}
           }
       ball = 
         defaultSphere
-          { transform = translation 0 (-3.5) (-0.5),
-            material = defaultMaterial {color = Color 1 0 0, ambient = 0.5}
+          { sphereTransform = translation 0 (-3.5) (-0.5),
+            sphereMaterial = defaultMaterial {color = Color 1 0 0, ambient = 0.5}
           }
       w = defaultWorld {objects = objects defaultWorld ++ [floor, ball]}
       r = Ray (Point 0 0 (-3)) (Vec 0 (- sqrt 2 / 2) (sqrt 2 / 2))
@@ -193,13 +193,13 @@ testShadeHitReflectionRefraction :: Test
 testShadeHitReflectionRefraction = TestCase $ do
   let floor =
         defaultPlane
-          { transform = translation 0 (-1) 0,
-            material = defaultMaterial {transparency = 0.5, reflective = 0.5, refractive = 1.5}
+          { planeTransform = translation 0 (-1) 0,
+            planeMaterial = defaultMaterial {transparency = 0.5, reflective = 0.5, refractive = 1.5}
           }
       ball = 
         defaultSphere
-          { transform = translation 0 (-3.5) (-0.5),
-            material = defaultMaterial {color = Color 1 0 0, ambient = 0.5}
+          { sphereTransform = translation 0 (-3.5) (-0.5),
+            sphereMaterial = defaultMaterial {color = Color 1 0 0, ambient = 0.5}
           }
       w = defaultWorld {objects = objects defaultWorld ++ [floor, ball]}
       r = Ray (Point 0 0 (-3)) (Vec 0 (- sqrt 2 / 2) (sqrt 2 / 2))

@@ -38,7 +38,7 @@ testRender = TestCase $ do
       up = Vec 0 1 0
       c = defaultCamera {hSize = 11, vSize = 11, camTransform = viewTransform from to up}
       image = render c w
-  assertEqual "equal color" (Color 0.38066 0.47583 0.2855) (image ! (5, 5))
+  assertEqual "equal color" (Color 0.38066 0.47583 0.2855) (image ! (4, 4))
 
 tests :: Test
 tests = TestList [testRayForPixelCenter, testRayForPixelCorner, testRayForPixelTransformed, testRender]
