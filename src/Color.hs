@@ -11,14 +11,6 @@ toPPM maxColor (Color r g b) =
       | x > hi = hi
       | otherwise = x
 
-cAdd :: Color -> Color -> Color
-cAdd (Color r1 g1 b1) (Color r2 g2 b2) = Color (r1 + r2) (g1 + g2) (b1 + b2)
-
-cSub :: Color -> Color -> Color
-cSub (Color r1 g1 b1) (Color r2 g2 b2) = Color (r1 - r2) (g1 - g2) (b1 - b2)
-
-cMult :: Double -> Color -> Color
-cMult c (Color r g b) = Color (c * r) (c * g) (c * b)
-
-hadamard :: Color -> Color -> Color
-hadamard (Color r1 g1 b1) (Color r2 g2 b2) = Color (r1 * r2) (g1 * g2) (b1 * b2)
+scale :: Double -> Color -> Color
+scale x (Color r g b) =
+  Color (r * x) (g * x) (b * x)

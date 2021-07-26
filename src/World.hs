@@ -2,7 +2,7 @@ module World where
 
 {-# LANGUAGE NamedFieldPuns #-}
 
-import Color (cAdd, cMult)
+import Color (scale)
 import Data.SortedList as SL (fromSortedList)
 import Intersection (hit, prepareComputation, headSL, schlick, atSL)
 import Light (lighting)
@@ -44,22 +44,23 @@ intersect (World _ objects) r = mconcat $ map (`Shape.intersect` r) objects
 shadeHit :: World -> Computation -> Int -> Color
 -- blend the colors produced by the hits of each light source in the world
 shadeHit w@(World lights _) comps remaining =
-  let Computation{ object, point, eye, normal, over } = comps
-      applyLighting light
-        | objReflective > 0 && objTransparency > 0 =
-            surface `cAdd` (reflectance `cMult` reflected) `cAdd` ((1 - reflectance) `cMult` refracted)
-        | otherwise = surface `cAdd` reflected `cAdd` refracted
-        where
-          objMaterial = getMaterial object
-          surface = lighting objMaterial object light point eye normal (isShadowed w over light)
-          reflected = reflectedColor w comps remaining
-          refracted = refractedColor w comps remaining
-          (objReflective, objTransparency) = (reflective objMaterial, transparency objMaterial)
-          reflectance = schlick comps
-      colors = map applyLighting lights
-      blend (Color r1 g1 b1) (Color r2 g2 b2) =
-        Color (max r1 r2) (max g1 g2) (max b1 b2)
-   in foldr1 blend colors
+  foldr1 blend colors
+  where
+    Computation{ object, point, eye, normal, over } = comps
+    applyLighting light
+      | objReflective > 0 && objTransparency > 0 =
+          surface + (reflectance `scale` reflected) + ((1 - reflectance) `scale` refracted)
+      | otherwise = surface + reflected + refracted
+      where
+        objMaterial = getMaterial object
+        surface = lighting objMaterial object light point eye normal (isShadowed w over light)
+        reflected = reflectedColor w comps remaining
+        refracted = refractedColor w comps remaining
+        (objReflective, objTransparency) = (reflective objMaterial, transparency objMaterial)
+        reflectance = schlick comps
+    colors = map applyLighting lights
+    blend (Color r1 g1 b1) (Color r2 g2 b2) =
+      Color (max r1 r2) (max g1 g2) (max b1 b2)
 
 colorAt :: World -> Ray -> Int -> Color
 colorAt world ray remaining =
@@ -92,7 +93,7 @@ reflectedColor w comps remaining
     Computation {object, over, reflect} = comps
     matReflective = reflective (getMaterial object)
     reflectRay = Ray over reflect
-    reflectColor = matReflective `cMult` colorAt w reflectRay (remaining - 1)
+    reflectColor = matReflective `scale` colorAt w reflectRay (remaining - 1)
 
 refractedColor :: World -> Computation -> Int -> Color 
 refractedColor w comps remaining
@@ -118,7 +119,7 @@ refractedColor w comps remaining
     cos_t = sqrt (1 - sin2_t)
     direction = ((nRatio * cos_i - cos_t) `vMult` normal) `vSub` (nRatio `vMult` eye)
     refractRay = Ray under direction
-    refractColor = matTransparency `cMult` colorAt w refractRay (remaining - 1)
+    refractColor = matTransparency `scale` colorAt w refractRay (remaining - 1)
 
 testRefractedColor :: String 
 testRefractedColor =

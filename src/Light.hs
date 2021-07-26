@@ -1,6 +1,5 @@
 module Light where
 
-import Color (cAdd, cMult, hadamard)
 import Material (black, defaultMaterial, patternAtShape)
 import Types
   ( Color,
@@ -12,10 +11,11 @@ import Types
     Shape(..)
   )
 import VecPoint (dot, normalize, pSub, reflect, vNeg)
+import Color (scale)
 
 lighting :: Material -> Shape -> PointLight -> Point -> Vec -> Vec -> Bool -> Color
 lighting material shape light point eyev normalv inShadow =
-  ambientLight `cAdd` diffuseLight `cAdd` specularLight
+  ambientLight + diffuseLight + specularLight
   where
     -- find color of surface if the material is patterned
     p@(Pattern colors _ _) = pattern material
@@ -23,23 +23,23 @@ lighting material shape light point eyev normalv inShadow =
       | null colors = color material
       | otherwise = patternAtShape p shape point
     -- combine surface color and light's color
-    effectiveColor = color' `hadamard` intensity light
+    effectiveColor = color' * intensity light
     -- find the direction to the light source
     lightv = normalize (position light `pSub` point)
     -- compute the ambient contribution
-    ambientLight = ambient material `cMult` effectiveColor
+    ambientLight = ambient material `scale` effectiveColor
     -- lightDotNormal represents the cosine of the angle between the light vector
     -- and the normal vector. Negative value means light is on the other side of surface.
     lightDotNormal = lightv `dot` normalv
     diffuseLight
       | lightDotNormal < 0 = black
       | inShadow = black
-      | otherwise = (diffuse material * lightDotNormal) `cMult` effectiveColor
+      | otherwise = (diffuse material * lightDotNormal) `scale` effectiveColor
     specularLight
       | lightDotNormal < 0 = black
       | reflectDotEye < 0 = black
       | inShadow = black
-      | otherwise = (factor * specular material) `cMult` intensity light
+      | otherwise = (factor * specular material) `scale` intensity light
       where
         reflectv = reflect (vNeg lightv) normalv
         -- reflectDotEye represents the cosine of the angle between the reflect vector

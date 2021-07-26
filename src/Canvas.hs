@@ -1,7 +1,6 @@
 module Canvas where
 
 import Types ( Color(..), Canvas )
-import Color ( cMult )
 import qualified Color (toPPM)
 import Data.Matrix (Matrix (..), matrix, setElem, toLists, getElem)
 import System.IO (IOMode (WriteMode), hPutStrLn, withFile)

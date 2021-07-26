@@ -1,8 +1,8 @@
 module Material where
 
-import Color (cAdd, cMult, cSub)
 import Transformation (identity, inverse, mpMult)
 import Types (Color (..), Material (..), Pattern (..), Point (..), Shape (..), getTransformation)
+import Color (scale)
 
 defaultMaterial :: Material
 defaultMaterial =
@@ -51,9 +51,9 @@ gradientPattern c1 c2 = defaultPattern {colors = [c1, c2], colorAt = gradientAt}
 
 gradientAt :: Pattern -> Point -> Color
 gradientAt (Pattern (c1 : c2 : _) _ _) (Point x _ _) =
-  let distance = c2 `cSub` c1
+  let distance = c2 - c1
       fraction = x - fromInteger (floor x)
-   in c1 `cAdd` (fraction `cMult` distance)
+   in c1 + (fraction `scale` distance)
 
 {- Rings -}
 ringPattern :: Color -> Color -> Pattern

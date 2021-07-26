@@ -32,6 +32,20 @@ instance Eq Color where
   (Color r1 g1 b1) == (Color r2 g2 b2) =
     approxEq r1 r2 && approxEq g1 g2 && approxEq b1 b2
 
+instance Num Color where
+  (Color r1 g1 b1) + (Color r2 g2 b2) =
+    Color (r1 + r2) (g1 + g2) (b1 + b2)
+  negate (Color r g b) =
+    Color (-r) (-g) (-b)
+  (Color r1 g1 b1) * (Color r2 g2 b2) =
+    Color (r1 * r2) (g1 * g2) (b1 * b2)
+  abs (Color r g b) =
+    Color (abs r) (abs g) (abs b)
+  signum (Color r g b) =
+    Color (signum r) (signum g) (signum b)
+  fromInteger int =
+    Color (fromInteger int) (fromInteger int) (fromInteger int)
+
 {- CANVAS -}
 type Canvas = Matrix Color
 
