@@ -16,7 +16,7 @@ import Types
     Pattern (..),
     Point (Point),
     PointLight (PointLight),
-    Shape (material, transform),
+    Shape (..),
     Vec (Vec),
     World (lights, objects),
   )
@@ -39,7 +39,7 @@ drawScene = render camera world
         }
     floor =
       defaultPlane
-        { material =
+        { planeMaterial =
             defaultMaterial
               { pattern = stripePattern (Color 0.35 0.35 0.35) (Color 0.65 0.65 0.65),
                 reflective = 0.4,
@@ -48,8 +48,8 @@ drawScene = render camera world
         }
     blueGlassSphere =
       glassSphere
-        { transform = translation 0.6 0.7 (-0.6) * scaling 0.7 0.7 0.7, 
-          material =
+        { sphereTransform = translation 0.6 0.7 (-0.6) * scaling 0.7 0.7 0.7, 
+          sphereMaterial =
             defaultMaterial
               { color = Color 0 0 0.2,
                 ambient = 0,
@@ -61,7 +61,7 @@ drawScene = render camera world
               }
         }
     left =
-      blueGlassSphere { transform = translation (-0.7 ) 0.5 (-0.8) * scaling 0.5 0.5 0.5 }
+      blueGlassSphere { sphereTransform = translation (-0.7 ) 0.5 (-0.8) * scaling 0.5 0.5 0.5 }
 
 runChapter11 :: IO ()
 runChapter11 = writeCanvas "reflection-spheres.ppm" drawScene

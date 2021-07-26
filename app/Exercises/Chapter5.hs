@@ -4,7 +4,8 @@ import Data.Matrix ( mapPos )
 import Types ( Point(Point), Ray(Ray), Color(Color), Canvas )
 import Canvas ( initCanvas, canvasWidth, writeCanvas )
 import VecPoint (pSub, normalize )
-import Shape ( intersect, hit, defaultSphere )
+import Shape ( intersect, defaultSphere )
+import Intersection ( hit ) 
 
 {- Putting it together -}
 drawSphereShadow :: Canvas -> Canvas
@@ -27,7 +28,7 @@ drawSphereShadow canvas =
     rayStart = Point 0 0 (-5)
     sphereCenter = Point 0 0 0
     wallZ = 10.0
-    wallSize = 7.0 :: Float
+    wallSize = 7.0
     pixelSize = wallSize / fromIntegral (canvasWidth canvas)
     halfWall = wallSize / 2
 

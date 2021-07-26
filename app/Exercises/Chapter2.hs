@@ -1,9 +1,9 @@
 module Exercises.Chapter2 where
 
-import Exercises.Chapter1 ( Projectile (Projectile, position), Environment(..), tick)
-import Canvas (Canvas, writeCanvas, initCanvas, canvasWidth, canvasHeight, setPixel)
-import VecPoint (Vec(..), Point (..), vMult, normalize)
-import Color ( Color(Color) )
+import Exercises.Chapter1 (Projectile(..), Environment(..), position, tick)
+import Types (Canvas, Point(..), Color(..), Vec(..))
+import VecPoint ( normalize, vMult )
+import Canvas ( initCanvas, setPixel, canvasHeight, canvasWidth, writeCanvas )
 
 {- Exercise: Putting it together -}
 plotProjectile :: Projectile -> Environment -> Canvas -> Canvas

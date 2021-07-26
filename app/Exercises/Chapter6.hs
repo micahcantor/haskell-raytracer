@@ -10,7 +10,7 @@ import VecPoint (normalize, pSub, vNeg)
 import Shape (intersect, normalAt, defaultSphere )
 import Intersection ( hit )
 import Types
-    ( Shape(material),
+    ( Shape(..),
       Intersection(Intersection),
       Material(color),
       Point(Point),
@@ -41,12 +41,12 @@ drawSphere canvas =
   where
     black = Color 0 0 0
     material = defaultMaterial { color = Color 1 0.2 1 }
-    sphere = defaultSphere  { material = material }
+    sphere = defaultSphere  { sphereMaterial = material }
     light = PointLight (Point (-10) 10 (-10)) (Color 1 1 1)
     rayStart = Point 0 0 (-5)
     sphereCenter = Point 0 0 0
     wallZ = 10.0
-    wallSize = 7.0 :: Float
+    wallSize = 7.0
     pixelSize = wallSize / fromIntegral (canvasWidth canvas)
     halfWall = wallSize / 2
 
