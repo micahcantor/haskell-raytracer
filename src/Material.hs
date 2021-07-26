@@ -2,7 +2,7 @@ module Material where
 
 import Color (cAdd, cMult, cSub)
 import Transformation (identity, inverse, mpMult)
-import Types (Color (..), Material (..), Pattern (..), Point (..), Shape (..))
+import Types (Color (..), Material (..), Pattern (..), Point (..), Shape (..), getTransformation)
 
 defaultMaterial :: Material
 defaultMaterial =
@@ -29,10 +29,12 @@ black = Color 0 0 0
 white = Color 1 1 1
 
 patternAtShape :: Pattern -> Shape -> Point -> Color
-patternAtShape p@(Pattern _ patternTransform colorAt) (Shape _ _ _ shapeTransform) worldPoint =
-  let objectPoint = inverse shapeTransform `mpMult` worldPoint
-      patternPoint = inverse patternTransform `mpMult` objectPoint
-   in colorAt p patternPoint
+patternAtShape p@(Pattern _ patternTransform colorAt) shape worldPoint =
+  colorAt p patternPoint
+  where
+    shapeTransform = getTransformation shape
+    objectPoint = inverse shapeTransform `mpMult` worldPoint
+    patternPoint = inverse patternTransform `mpMult` objectPoint
 
 {- Stripes -}
 stripePattern :: Color -> Color -> Pattern

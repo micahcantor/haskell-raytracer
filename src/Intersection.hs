@@ -12,9 +12,10 @@ import Types
     Material (refractive),
     Point (..),
     Ray (..),
-    Shape (material, transform),
+    Shape (..),
     Vec (..),
     toIntersections,
+    getMaterial
   )
 import VecPoint (dot, epsilon, reflect, vMult, vNeg, vpAdd, vpSub)
 
@@ -52,19 +53,23 @@ computeRefraction hit intersections = go (fromSortedList intersections) [] (0, 0
     go :: [Intersection] -> [Shape] -> (Double, Double) -> (Double, Double)
     go [] _ (n1, n2) = (n1, n2)
     go (i@(Intersection t object) : xs) containers (n1, n2) =
-      let calcRefractiveIndex lst
-            | null lst = 1.0
-            | otherwise = (refractive . material . head) lst
-          first
-            | i == hit = calcRefractiveIndex containers
-            | otherwise = n1
-          newContainers
-            | object `elem` containers = delete object containers
-            | otherwise = object : containers
-          second 
-            | i == hit = calcRefractiveIndex newContainers
-            | otherwise = n2
-       in go (if i == hit then [] else xs) newContainers (first, second)
+      go intersections newContainers (first, second)
+      where
+        calcRefractiveIndex lst
+          | null lst = 1.0
+          | otherwise = (refractive . getMaterial . head) lst
+        first
+          | i == hit = calcRefractiveIndex containers
+          | otherwise = n1
+        newContainers
+          | object `elem` containers = delete object containers
+          | otherwise = object : containers
+        second
+          | i == hit = calcRefractiveIndex newContainers
+          | otherwise = n2
+        intersections
+          | i == hit = []
+          | otherwise = xs
 
 schlick :: Computation -> Double
 -- uses the schlick approximation to calculate reflectance
@@ -76,7 +81,6 @@ schlick comps
     (eyev, normalv, n_1, n_2) = (eye comps, normal comps, n1 comps, n2 comps)
     cos = eyev `dot` normalv
     n = n_1 / n_2
-    sin2_t = n^2 * (1 - cos^2)
+    sin2_t = n ^ 2 * (1 - cos ^ 2)
     cos_t = sqrt (1.0 - sin2_t)
     r0 = ((n_1 - n_2) / (n_1 + n_2)) ^ 2
-

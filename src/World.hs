@@ -18,9 +18,9 @@ import Types
     Point (..),
     PointLight (PointLight),
     Ray (..),
-    Shape (material, transform),
+    Shape (..),
     World (..),
-    Vec(..), toIntersections
+    Vec(..), toIntersections, getMaterial
   )
 import VecPoint (magnitude, normalize, pSub, dot, vMult, vSub)
 import Debug.Trace
@@ -29,8 +29,8 @@ import Debug.Trace
 defaultWorld :: World
 defaultWorld =
   let lights = [PointLight (Point (-10) 10 (-10)) white]
-      s1 = defaultSphere {material = defaultMaterial {color = Color 0.8 1.0 0.6, diffuse = 0.7, specular = 0.2}}
-      s2 = defaultSphere {transform = scaling 0.5 0.5 0.5}
+      s1 = defaultSphere {sphereMaterial = defaultMaterial {color = Color 0.8 1.0 0.6, diffuse = 0.7, specular = 0.2}}
+      s2 = defaultSphere {sphereTransform = scaling 0.5 0.5 0.5}
       objects = [s1, s2]
    in World lights objects
 
@@ -50,10 +50,10 @@ shadeHit w@(World lights _) comps remaining =
             surface `cAdd` (reflectance `cMult` reflected) `cAdd` ((1 - reflectance) `cMult` refracted)
         | otherwise = surface `cAdd` reflected `cAdd` refracted
         where
-          surface = lighting (material object) object light point eye normal (isShadowed w over light)
+          objMaterial = getMaterial object
+          surface = lighting objMaterial object light point eye normal (isShadowed w over light)
           reflected = reflectedColor w comps remaining
           refracted = refractedColor w comps remaining
-          objMaterial = material object
           (objReflective, objTransparency) = (reflective objMaterial, transparency objMaterial)
           reflectance = schlick comps
       colors = map applyLighting lights
@@ -90,7 +90,7 @@ reflectedColor w comps remaining
   | otherwise = reflectColor
   where
     Computation {object, over, reflect} = comps
-    matReflective = reflective $ material object
+    matReflective = reflective (getMaterial object)
     reflectRay = Ray over reflect
     reflectColor = matReflective `cMult` colorAt w reflectRay (remaining - 1)
 
@@ -111,7 +111,7 @@ refractedColor w comps remaining
     refractColor
   where
     Computation {object, eye, normal, under, n1, n2} = comps
-    matTransparency = transparency (material object)
+    matTransparency = transparency (getMaterial object)
     nRatio = n1 / n2
     cos_i = eye `dot` normal
     sin2_t = (nRatio ^ 2) * (1 - (cos_i ^ 2))
@@ -123,8 +123,8 @@ refractedColor w comps remaining
 testRefractedColor :: String 
 testRefractedColor =
   let [s1, s2] = objects defaultWorld
-      a = s1 {material = defaultMaterial {ambient = 1.0, pattern = testPattern}}
-      b = s2 {material = defaultMaterial {transparency = 1.0, refractive = 1.5}}
+      a = s1 {sphereMaterial = defaultMaterial {ambient = 1.0, pattern = testPattern}}
+      b = s2 {sphereMaterial = defaultMaterial {transparency = 1.0, refractive = 1.5}}
       w = defaultWorld {objects = [a, b]}
       r = Ray (Point 0 0 0.1) (Vec 0 1 0)
       xs = toIntersections [Intersection (-0.9899) a, Intersection (-0.4899) b, Intersection 0.4899 b, Intersection 0.9899 a]
