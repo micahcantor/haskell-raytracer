@@ -162,7 +162,7 @@ testComputeUnderPoint = TestCase $ do
       (Point _ _ underZ) = under comps
       (Point _ _ pointZ) = point comps
   assertBool "under point goes under" (underZ > epsilon / 2)
-  assertBool "uner point is under surface" (pointZ < underZ)
+  assertBool "under point is under surface" (pointZ < underZ)
 
 testSchlickTotalInternal :: Test 
 testSchlickTotalInternal = TestCase $ do

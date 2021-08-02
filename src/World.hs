@@ -1,13 +1,14 @@
-module World where
-
 {-# LANGUAGE NamedFieldPuns #-}
+
+module World where
 
 import Color (scale)
 import Data.SortedList as SL (fromSortedList)
-import Intersection (hit, prepareComputation, headSL, schlick, atSL)
+import Debug.Trace
+import Intersection (atSL, headSL, hit, prepareComputation, schlick)
 import Light (lighting)
-import Material (defaultMaterial, black, white, testPattern)
-import Shape (defaultSphere, intersect, defaultPlane)
+import Material (black, defaultMaterial, testPattern, white)
+import Shape (defaultPlane, defaultSphere, intersect)
 import Transformation (scaling, translation)
 import Types
   ( Color (..),
@@ -19,12 +20,12 @@ import Types
     PointLight (PointLight),
     Ray (..),
     Shape (..),
+    Vec (..),
     World (..),
-    Vec(..), toIntersections, getMaterial
+    getMaterial,
+    toIntersections,
   )
-import VecPoint (magnitude, normalize, pSub, dot, vMult, vSub)
-import Debug.Trace
-
+import VecPoint (dot, magnitude, normalize, pSub, vMult, vSub)
 
 defaultWorld :: World
 defaultWorld =
@@ -46,10 +47,10 @@ shadeHit :: World -> Computation -> Int -> Color
 shadeHit w@(World lights _) comps remaining =
   foldr1 blend colors
   where
-    Computation{ object, point, eye, normal, over } = comps
+    Computation {object, point, eye, normal, over} = comps
     applyLighting light
       | objReflective > 0 && objTransparency > 0 =
-          surface + (reflectance `scale` reflected) + ((1 - reflectance) `scale` refracted)
+        surface + (reflectance `scale` reflected) + ((1 - reflectance) `scale` refracted)
       | otherwise = surface + reflected + refracted
       where
         objMaterial = getMaterial object
@@ -64,10 +65,11 @@ shadeHit w@(World lights _) comps remaining =
 
 colorAt :: World -> Ray -> Int -> Color
 colorAt world ray remaining =
-  let xs = world `World.intersect` ray
-   in case hit xs of
-        Just intersection -> shadeHit world (prepareComputation ray intersection xs) remaining
-        Nothing -> black
+  case hit xs of
+    Just intersection -> shadeHit world (prepareComputation ray intersection xs) remaining
+    Nothing -> black
+  where
+    xs = world `World.intersect` ray
 
 isShadowed :: World -> Point -> PointLight -> Bool
 -- calculate intersections from a given point to all lights in world,
@@ -95,21 +97,22 @@ reflectedColor w comps remaining
     reflectRay = Ray over reflect
     reflectColor = matReflective `scale` colorAt w reflectRay (remaining - 1)
 
-refractedColor :: World -> Computation -> Int -> Color 
+refractedColor :: World -> Computation -> Int -> Color
 refractedColor w comps remaining
   | remaining <= 0 = black
   | sin2_t > 1 = black -- total internal reflection, so no refraction
   | matTransparency == 0 = black
-  | otherwise = 
+  | otherwise =
     trace
-     (unlines [
-       "transp: " ++ show matTransparency, 
-       "eye: " ++ show eye,
-       "normal: " ++ show normal,
-       "under: " ++ show under,
-       "n1: " ++ show n1,
-       "n2: " ++ show n2])
-    refractColor
+      ( unlines
+          [ "eye: " ++ show eye,
+            "normal: " ++ show normal,
+            "under: " ++ show under,
+            "n1: " ++ show n1,
+            "n2: " ++ show n2
+          ]
+      )
+      refractColor
   where
     Computation {object, eye, normal, under, n1, n2} = comps
     matTransparency = transparency (getMaterial object)
@@ -121,7 +124,7 @@ refractedColor w comps remaining
     refractRay = Ray under direction
     refractColor = matTransparency `scale` colorAt w refractRay (remaining - 1)
 
-testRefractedColor :: String 
+testRefractedColor :: String
 testRefractedColor =
   let [s1, s2] = objects defaultWorld
       a = s1 {sphereMaterial = defaultMaterial {ambient = 1.0, pattern = testPattern}}

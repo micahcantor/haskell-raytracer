@@ -48,16 +48,17 @@ prepareComputation r@(Ray origin direction) hit@(Intersection t object) xs =
    in Computation inside t object point eyev newNormalv reflectv overPoint underPoint n1 n2
 
 computeRefraction :: Intersection -> Intersections -> (Double, Double)
-computeRefraction hit intersections = go (fromSortedList intersections) [] (0, 0)
+computeRefraction hit intersections = 
+  go (fromSortedList intersections) [] (0, 0)
   where
     go :: [Intersection] -> [Shape] -> (Double, Double) -> (Double, Double)
     go [] _ (n1, n2) = (n1, n2)
     go (i@(Intersection t object) : xs) containers (n1, n2) =
       go intersections newContainers (first, second)
       where
-        calcRefractiveIndex lst
-          | null lst = 1.0
-          | otherwise = (refractive . getMaterial . head) lst
+        calcRefractiveIndex xs
+          | null xs = 1.0
+          | otherwise = refractive $ getMaterial $ head xs
         first
           | i == hit = calcRefractiveIndex containers
           | otherwise = n1
