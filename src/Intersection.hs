@@ -1,5 +1,6 @@
 module Intersection where
 
+import Data.Foldable ( find ) 
 import Data.List (delete)
 import Data.SortedList as SL (drop, filter, fromSortedList, toSortedList, uncons)
 import Ray (position)
@@ -23,11 +24,11 @@ headSL :: Intersections -> Intersection
 headSL = head . SL.fromSortedList
 
 atSL :: Intersections -> Int -> Intersection
-xs `atSL` i = head $ SL.fromSortedList $ SL.drop i xs
+xs `atSL` i = SL.fromSortedList xs !! i
 
 hit :: Intersections -> Maybe Intersection
 -- returns the first nonzero intersection, if it exists
-hit = fmap fst . SL.uncons . SL.filter (\(Intersection t _) -> t > 0)
+hit = find (\(Intersection t _) -> t > 0)
 
 prepareComputation :: Ray -> Intersection -> Intersections -> Computation
 -- precomputes the state of an intersection
@@ -48,7 +49,7 @@ prepareComputation r@(Ray origin direction) hit@(Intersection t object) xs =
    in Computation inside t object point eyev newNormalv reflectv overPoint underPoint n1 n2
 
 computeRefraction :: Intersection -> Intersections -> (Double, Double)
-computeRefraction hit intersections = 
+computeRefraction hit intersections =
   go (fromSortedList intersections) [] (0, 0)
   where
     go :: [Intersection] -> [Shape] -> (Double, Double) -> (Double, Double)
