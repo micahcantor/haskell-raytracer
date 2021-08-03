@@ -39,7 +39,7 @@ testShadeHit = TestCase $ do
 
 testShadeHitInside :: Test
 testShadeHitInside = TestCase $ do
-  let w = defaultWorld {lights = [PointLight (Point 0 0.25 0) (Color 1 1 1)]}
+  let w = defaultWorld {light = PointLight (Point 0 0.25 0) (Color 1 1 1)}
       r = Ray (Point 0 0 0) (Vec 0 0 1)
       shape = objects w !! 1
       i = Intersection 0.5 shape
@@ -50,7 +50,7 @@ testShadeHitInShadow :: Test
 testShadeHitInShadow = TestCase $ do
   let s1 = defaultSphere
       s2 = defaultSphere {sphereTransform = translation 0 0 10}
-      w = defaultWorld {lights = [PointLight (Point 0 0 (-10)) (Color 1 1 1)], objects = [s1, s2]}
+      w = defaultWorld {light = PointLight (Point 0 0 (-10)) (Color 1 1 1), objects = [s1, s2]}
       r = Ray (Point 0 0 5) (Vec 0 0 1)
       i = Intersection 4 s2
       comps = prepareComputation r i (toIntersections [i])
@@ -81,29 +81,25 @@ testIsShadowedNotColinear :: Test
 testIsShadowedNotColinear = TestCase $ do
   let w = defaultWorld
       p = Point 0 10 0
-      light = head (lights w)
-  assertEqual "isShadowed colinear" False (isShadowed w p light)
+  assertEqual "isShadowed colinear" False (isShadowed w p (light w))
 
 testIsShadowedIsBehindSphere :: Test
 testIsShadowedIsBehindSphere = TestCase $ do
   let w = defaultWorld
       p = Point 10 (-10) 10
-      light = head (lights w)
-  assertEqual "isShadowed between sphere and light" True (isShadowed w p light)
+  assertEqual "isShadowed between sphere and light" True (isShadowed w p (light w))
 
 testIsShadowedInFrontLight :: Test
 testIsShadowedInFrontLight = TestCase $ do
   let w = defaultWorld
       p = Point (-20) 20 (-20)
-      light = head (lights w)
-  assertEqual "isShadowed in front of light" False (isShadowed w p light)
+  assertEqual "isShadowed in front of light" False (isShadowed w p (light w))
 
 testIsShadowedInFrontSphere :: Test
 testIsShadowedInFrontSphere = TestCase $ do
   let w = defaultWorld
       p = Point (-2) 2 (-2)
-      light = head (lights w)
-  assertEqual "isShadowed in front of sphere" False (isShadowed w p light)
+  assertEqual "isShadowed in front of sphere" False (isShadowed w p (light w))
 
 testReflectedColorNonReflective :: Test
 testReflectedColorNonReflective = TestCase $ do
