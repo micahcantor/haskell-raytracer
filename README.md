@@ -2,7 +2,7 @@
 
 This repo contains my work-in-progress code for implementing the raytracer described in the book *The Raytracer Challenge* by James Buck.
 
-Currently I have implemented the code through chapter 9, planes.
+Currently I have implemented the code through chapter 11, reflection and refraction.
 
 ## Directory structure:
 - **src**: Contains the primary raytracer code
