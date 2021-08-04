@@ -5,7 +5,7 @@ import Camera
     render,
   )
 import Canvas (writeCanvas)
-import Material (black, checkerPattern, defaultMaterial, gradientPattern, ringPattern, stripePattern, white)
+import Material (black, checkerPattern, defaultMaterial, glass, gradientPattern, ringPattern, stripePattern, white)
 import Shape (defaultPlane, defaultSphere, glassSphere)
 import Transformation (rotationX, scaling, translation, viewTransform)
 import Types
@@ -32,8 +32,8 @@ drawScene = render camera world
         }
     camera =
       defaultCamera
-        { hSize = 200,
-          vSize = 150,
+        { hSize = 1000,
+          vSize = 750,
           fov = pi / 3,
           camTransform = viewTransform (Point (-2.6) 1.5 (-3.9)) (Point (-0.6) 1 (-0.8)) (Vec 0 1 0)
         }
@@ -41,27 +41,18 @@ drawScene = render camera world
       defaultPlane
         { planeMaterial =
             defaultMaterial
-              { pattern = Just $ stripePattern (Color 0.35 0.35 0.35) (Color 0.65 0.65 0.65),
+              { pattern = Just $ stripePattern (Color 0.1 0.1 0.1) white,
                 reflective = 0.4,
-                specular = 0
+                specular = 0.1
               }
         }
     blueGlassSphere =
       glassSphere
-        { sphereTransform = translation 0.6 0.7 (-0.6) * scaling 0.7 0.7 0.7, 
-          sphereMaterial =
-            defaultMaterial
-              { color = Color 0 0 0.2,
-                ambient = 0,
-                diffuse = 0.4,
-                specular = 0.9,
-                reflective = 0.9,
-                transparency = 0.9,
-                shininess = 300
-              }
+        { sphereTransform = translation 0.6 0.7 (-0.6) * scaling 0.7 0.7 0.7,
+          sphereMaterial = glass {color = Color 0 0 0.2}
         }
     left =
-      blueGlassSphere { sphereTransform = translation (-0.7 ) 0.5 (-0.8) * scaling 0.5 0.5 0.5 }
+      blueGlassSphere {sphereTransform = translation (-0.7) 0.5 (-0.8) * scaling 0.5 0.5 0.5}
 
 runChapter11 :: IO ()
 runChapter11 = writeCanvas "reflection-spheres.ppm" drawScene
