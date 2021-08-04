@@ -41,7 +41,7 @@ drawScene = render camera world
       defaultPlane
         { planeMaterial =
             defaultMaterial
-              { pattern = stripePattern (Color 0.35 0.35 0.35) (Color 0.65 0.65 0.65),
+              { pattern = Just $ stripePattern (Color 0.35 0.35 0.35) (Color 0.65 0.65 0.65),
                 reflective = 0.4,
                 specular = 0
               }

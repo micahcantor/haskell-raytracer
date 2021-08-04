@@ -38,13 +38,13 @@ drawScene = render camera world
           camTransform = viewTransform (Point 0 1.5 (-5)) (Point 0 1 0) (Vec 0 1 0)
         }
     floor =
-      defaultPlane {planeMaterial = defaultMaterial {pattern = stripePattern white (Color 1 0 0)}}
+      defaultPlane {planeMaterial = defaultMaterial {pattern = Just $ stripePattern white (Color 1 0 0)}}
     middle =
       defaultSphere
         { sphereTransform = translation (-0.5) 1 0.5,
           sphereMaterial =
             defaultMaterial
-              { pattern = (gradientPattern (Color 1 0 0) white) {patTransform = translation (-1) 0 0 * scaling 2 1 1},
+              { pattern = Just $ (gradientPattern (Color 1 0 0) white) {patTransform = translation (-1) 0 0 * scaling 2 1 1},
                 diffuse = 0.7,
                 specular = 0.3
               }
@@ -54,7 +54,7 @@ drawScene = render camera world
         { sphereTransform = translation (-1.5) 0.33 (-0.75) * scaling 0.33 0.33 0.33,
           sphereMaterial =
             defaultMaterial
-              { pattern = (gradientPattern (Color 1 0 0) white) {patTransform = translation (-1) 0 0 * scaling 2 1 1},
+              { pattern = Just $ (gradientPattern (Color 1 0 0) white) {patTransform = translation (-1) 0 0 * scaling 2 1 1},
                 diffuse = 0.7,
                 specular = 0.3
               }
@@ -64,7 +64,7 @@ drawScene = render camera world
         { sphereTransform = translation 1.5 0.5 (-0.5) * scaling 0.5 0.5 0.5,
           sphereMaterial =
             defaultMaterial
-              { pattern = (gradientPattern (Color 1 0 0) white) {patTransform = translation (-1) 0 0 * scaling 2 1 1},
+              { pattern = Just $ (gradientPattern (Color 1 0 0) white) {patTransform = translation (-1) 0 0 * scaling 2 1 1},
                 diffuse = 0.7,
                 specular = 0.3
               }
