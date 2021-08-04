@@ -131,4 +131,4 @@ data PointLight = PointLight {position :: Point, intensity :: Color}
 type Transformation = Matrix Double
 
 {- WORLD -}
-data World = World {light :: PointLight, objects :: [Shape]}
+data World = World {lights :: [PointLight], objects :: [Shape]}

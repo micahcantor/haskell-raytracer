@@ -29,11 +29,11 @@ import VecPoint (dot, magnitude, normalize, pSub, vMult, vSub)
 
 defaultWorld :: World
 defaultWorld =
-  let light = PointLight (Point (-10) 10 (-10)) white
+  let lights = [PointLight (Point (-10) 10 (-10)) white]
       s1 = defaultSphere {sphereMaterial = defaultMaterial {color = Color 0.8 1.0 0.6, diffuse = 0.7, specular = 0.2}}
       s2 = defaultSphere {sphereTransform = scaling 0.5 0.5 0.5}
       objects = [s1, s2]
-   in World light objects
+   in World lights objects
 
 maxRecursions :: Int
 maxRecursions = 5
@@ -43,18 +43,25 @@ intersect :: World -> Ray -> Intersections
 intersect (World _ objects) r = mconcat $ map (`Shape.intersect` r) objects
 
 shadeHit :: World -> Computation -> Int -> Color
-shadeHit w@(World light _) comps remaining
-  | objReflective > 0 && objTransparency > 0 =
-    surface + (reflectance `scale` reflected) + ((1 - reflectance) `scale` refracted)
-  | otherwise = surface + reflected + refracted
+-- blend the colors produced by the hits of each light source in the world
+shadeHit w@(World lights _) comps remaining =
+  foldr1 blend colors
   where
     Computation {object, point, eye, normal, over} = comps
-    objMaterial = getMaterial object
-    surface = lighting objMaterial object light point eye normal (isShadowed w over light)
-    reflected = reflectedColor w comps remaining
-    refracted = refractedColor w comps remaining
-    (objReflective, objTransparency) = (reflective objMaterial, transparency objMaterial)
-    reflectance = schlick comps
+    applyLighting light
+      | objReflective > 0 && objTransparency > 0 =
+        surface + (reflectance `scale` reflected) + ((1 - reflectance) `scale` refracted)
+      | otherwise = surface + reflected + refracted
+      where
+        objMaterial = getMaterial object
+        surface = lighting objMaterial object light point eye normal (isShadowed w over light)
+        reflected = reflectedColor w comps remaining
+        refracted = refractedColor w comps remaining
+        (objReflective, objTransparency) = (reflective objMaterial, transparency objMaterial)
+        reflectance = schlick comps
+    colors = map applyLighting lights
+    blend (Color r1 g1 b1) (Color r2 g2 b2) =
+      Color (max r1 r2) (max g1 g2) (max b1 b2)
 
 colorAt :: World -> Ray -> Int -> Color
 colorAt world ray remaining =
