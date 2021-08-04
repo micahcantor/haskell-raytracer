@@ -159,7 +159,7 @@ testRefractedColorInternalReflection = TestCase $ do
 testRefractedColorRefraction :: Test
 testRefractedColorRefraction = TestCase $ do
   let [s1, s2] = objects defaultWorld
-      a = s1 {sphereMaterial = defaultMaterial {ambient = 1.0, pattern = testPattern}}
+      a = s1 {sphereMaterial = defaultMaterial {ambient = 1.0, pattern = Just testPattern}}
       b = s2 {sphereMaterial = defaultMaterial {transparency = 1.0, refractive = 1.5}}
       w = defaultWorld {objects = [a, b]}
       r = Ray (Point 0 0 0.1) (Vec 0 1 0)

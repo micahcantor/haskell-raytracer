@@ -4,7 +4,6 @@ module World where
 
 import Color (scale)
 import Data.SortedList as SL (fromSortedList)
-import Debug.Trace
 import Intersection (atSL, headSL, hit, prepareComputation, schlick)
 import Light (lighting)
 import Material (black, defaultMaterial, testPattern, white)
@@ -23,6 +22,7 @@ import Types
     Vec (..),
     World (..),
     getMaterial,
+    getTransformation,
     toIntersections,
   )
 import VecPoint (dot, magnitude, normalize, pSub, vMult, vSub)
@@ -45,8 +45,7 @@ intersect (World _ objects) r = mconcat $ map (`Shape.intersect` r) objects
 shadeHit :: World -> Computation -> Int -> Color
 shadeHit w@(World light _) comps remaining
   | objReflective > 0 && objTransparency > 0 =
-      surface + reflected + refracted
-      -- surface + (reflectance `scale` reflected) + ((1 - reflectance) `scale` refracted)
+    surface + (reflectance `scale` reflected) + ((1 - reflectance) `scale` refracted)
   | otherwise = surface + reflected + refracted
   where
     Computation {object, point, eye, normal, over} = comps
@@ -60,7 +59,7 @@ shadeHit w@(World light _) comps remaining
 colorAt :: World -> Ray -> Int -> Color
 colorAt world ray remaining =
   case hit intersections of
-    Just i -> shadeHit world (comps i) remaining
+    Just i@(Intersection t shape) -> shadeHit world (comps i) remaining
     Nothing -> black
   where
     intersections = world `World.intersect` ray
@@ -113,7 +112,7 @@ refractedColor w comps remaining
 testRefractedColor :: IO ()
 testRefractedColor =
   let [s1, s2] = objects defaultWorld
-      a = s1 {sphereMaterial = defaultMaterial {ambient = 1.0, pattern = testPattern}}
+      a = s1 {sphereMaterial = defaultMaterial {ambient = 1.0, pattern = Just testPattern}}
       b = s2 {sphereMaterial = defaultMaterial {transparency = 1.0, refractive = 1.5}}
       w = defaultWorld {objects = [a, b]}
       r = Ray (Point 0 0 0.1) (Vec 0 1 0)

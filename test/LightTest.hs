@@ -79,7 +79,7 @@ testLightingInShadow = TestCase $ do
 
 testLightingPattern :: Test
 testLightingPattern = TestCase $ do
-  let m = defaultMaterial {ambient = 1, diffuse = 0, specular = 0, pattern = stripePattern white black}
+  let m = defaultMaterial {ambient = 1, diffuse = 0, specular = 0, pattern = Just (stripePattern white black)}
       eyev = Vec 0 0 (-1)
       normalv = Vec 0 0 (-1)
       light = PointLight (Point 0 0 (-10)) white
