@@ -108,14 +108,3 @@ refractedColor w comps remaining
     refractRay = Ray under direction
     color = colorAt w refractRay (remaining - 1)
     refractColor = matTransparency `scale` color
-
-testRefractedColor :: IO ()
-testRefractedColor =
-  let [s1, s2] = objects defaultWorld
-      a = s1 {sphereMaterial = defaultMaterial {ambient = 1.0, pattern = Just testPattern}}
-      b = s2 {sphereMaterial = defaultMaterial {transparency = 1.0, refractive = 1.5}}
-      w = defaultWorld {objects = [a, b]}
-      r = Ray (Point 0 0 0.1) (Vec 0 1 0)
-      xs = toIntersections [Intersection (-0.9899) a, Intersection (-0.4899) b, Intersection 0.4899 b, Intersection 0.9899 a]
-      comps = prepareComputation r (xs `atSL` 2) xs
-   in print $ refractedColor w comps 5
