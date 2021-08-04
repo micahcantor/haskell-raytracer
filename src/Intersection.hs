@@ -1,6 +1,6 @@
 module Intersection where
 
-import Data.Foldable ( find ) 
+import Data.Foldable (find)
 import Data.List (delete)
 import Data.SortedList as SL (drop, filter, fromSortedList, toSortedList, uncons)
 import Ray (position)
@@ -15,8 +15,8 @@ import Types
     Ray (..),
     Shape (..),
     Vec (..),
+    getMaterial,
     toIntersections,
-    getMaterial
   )
 import VecPoint (dot, epsilon, reflect, vMult, vNeg, vpAdd, vpSub)
 
@@ -54,24 +54,27 @@ computeRefraction hit intersections =
   where
     go :: [Intersection] -> [Shape] -> (Double, Double) -> (Double, Double)
     go [] _ (n1, n2) = (n1, n2)
-    go (i@(Intersection t object) : xs) containers (n1, n2) =
-      go intersections newContainers (first, second)
+    go (i@(Intersection t object) : xs) containers (n1, n2)
+      | i == hit = (n1', n2')
+      | otherwise = go xs containers' (n1', n2')
       where
-        calcRefractiveIndex xs
-          | null xs = 1.0
-          | otherwise = refractive $ getMaterial $ head xs
-        first
-          | i == hit = calcRefractiveIndex containers
+        getFirstRefractive = refractive . getMaterial . head
+        n1'
+          | i == hit = case containers of
+            [] -> 1.0
+            _ -> getFirstRefractive containers
           | otherwise = n1
-        newContainers
-          | object `elem` containers = delete object containers
-          | otherwise = object : containers
-        second
-          | i == hit = calcRefractiveIndex newContainers
+        containers'
+          | object `elem` containers =
+            delete object containers
+          | otherwise =
+            object : containers
+        n2'
+          | i == hit = case containers' of
+            [] -> 1.0
+            _ -> getFirstRefractive containers'
           | otherwise = n2
-        intersections
-          | i == hit = []
-          | otherwise = xs
+        
 
 schlick :: Computation -> Double
 -- uses the schlick approximation to calculate reflectance
