@@ -36,7 +36,7 @@ instance Num Color where
   (Color r1 g1 b1) + (Color r2 g2 b2) =
     Color (r1 + r2) (g1 + g2) (b1 + b2)
   negate (Color r g b) =
-    Color (-r) (-g) (-b)
+    Color (- r) (- g) (- b)
   (Color r1 g1 b1) * (Color r2 g2 b2) =
     Color (r1 * r2) (g1 * g2) (b1 * b2)
   abs (Color r g b) =
@@ -107,7 +107,7 @@ data Material = Material
     reflective :: Double,
     transparency :: Double,
     refractive :: Double,
-    pattern :: Pattern
+    pattern :: Maybe Pattern
   }
   deriving (Show, Eq)
 
@@ -117,8 +117,9 @@ data Pattern = Pattern
     colorAt :: Pattern -> Point -> Color
   }
 
+-- below instances for debugging purposes
 instance Show Pattern where
-  show (Pattern c _ _) = show c
+  show (Pattern c t _) = "Pattern " ++ show c ++ show t
 
 instance Eq Pattern where
   (Pattern c1 t1 _) == (Pattern c2 t2 _) = c1 == c2 && t1 == t2
@@ -131,4 +132,3 @@ type Transformation = Matrix Double
 
 {- WORLD -}
 data World = World {light :: PointLight, objects :: [Shape]}
-

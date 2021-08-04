@@ -15,7 +15,7 @@ defaultMaterial =
       reflective = 0.0,
       refractive = 1.0,
       transparency = 0,
-      pattern = defaultPattern
+      pattern = Nothing
     }
 
 glass :: Material
@@ -73,6 +73,6 @@ checkerAt (Pattern (c1 : c2 : _) _ _) (Point x y z)
   | even (floor x + floor y + floor z) = c1
   | otherwise = c2
 
-{- A pattern used in some tests -}
-testPattern :: Pattern
-testPattern = defaultPattern {colorAt = \_ (Point x y z) -> Color x y z}
+{- testPattern -}
+testPattern :: Pattern 
+testPattern = Pattern [] identity (\_ (Point x y z) -> Color x y z)

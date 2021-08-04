@@ -18,12 +18,11 @@ lighting material shape light point eyev normalv inShadow =
   ambientLight + diffuseLight + specularLight
   where
     -- find color of surface if the material is patterned
-    p@(Pattern colors _ _) = pattern material
-    color'
-      | null colors = color material
-      | otherwise = patternAtShape p shape point
+    surfaceColor = case pattern material of
+      Nothing -> color material
+      Just p -> patternAtShape p shape point
     -- combine surface color and light's color
-    effectiveColor = color' * intensity light
+    effectiveColor = surfaceColor * intensity light
     -- find the direction to the light source
     lightv = normalize (position light `pSub` point)
     -- compute the ambient contribution
