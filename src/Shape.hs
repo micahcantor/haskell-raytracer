@@ -10,7 +10,8 @@ import Types
       Vec(..),
       Ray(..),
       Material(..),
-      toIntersections )
+      toIntersections,
+      (~=) )
 import qualified Data.SortedList as SL
 import Transformation (identity, inverse, mpMult, mvMult, scaling, translation)
 import VecPoint (dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd)
@@ -41,6 +42,22 @@ intersect plane@(Plane material transform) ray
     Vec _ directionY _ = direction
     t = -originY / directionY
 
+intersect cube@Cube {} (Ray (Point x1 y1 z1) (Vec x2 y2 z2))
+  | tmin > tmax = SL.toSortedList []
+  | otherwise = SL.toSortedList [Intersection tmin cube, Intersection tmax cube]
+  where
+    checkAxis origin direction
+      | tmin > tmax = (tmax, tmin)
+      | otherwise = (tmin, tmax)
+      where
+        tmin = ((-1) - origin) / direction
+        tmax = (1 - origin) / direction
+    (xtmin, xtmax) = checkAxis x1 x2
+    (ytmin, ytmax) = checkAxis y1 y2
+    (ztmin, ztmax) = checkAxis z1 z2
+    tmin = maximum [xtmin, ytmin, ztmin]
+    tmax = minimum [xtmax, ytmax, ztmax]
+
 normalAt :: Shape -> Point -> Vec
 normalAt (Sphere _ transform) point = normalize worldNormal
   where
@@ -52,8 +69,16 @@ normalAt (Sphere _ transform) point = normalize worldNormal
 normalAt (Plane _ transform) point = normalize worldNormal
   where
     inverseTransform = inverse transform
-    localNormal = Vec 0 1 0 
+    localNormal = Vec 0 1 0
     worldNormal = transpose inverseTransform `mvMult` localNormal
+
+normalAt (Cube _ transform) point
+  | maxc ~= abs x = Vec x 0 0
+  | maxc ~= abs y = Vec 0 y 0
+  | maxc ~= abs z = Vec 0 0 z
+  where
+    (Point x y z) = inverse transform `mpMult` point
+    maxc = maximum (map abs [x, y, z])
 
 {- Default shapes -}
 defaultSphere :: Shape
@@ -64,3 +89,6 @@ glassSphere = Sphere glass identity
 
 defaultPlane :: Shape
 defaultPlane = Plane defaultMaterial identity
+
+defaultCube :: Shape
+defaultCube = Cube defaultMaterial identity

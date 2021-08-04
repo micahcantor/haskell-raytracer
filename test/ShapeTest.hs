@@ -1,16 +1,17 @@
 module ShapeTest where
 
-import Types
-    ( Shape(..),
-      Intersection(Intersection),
-      Point(Point),
-      Vec(Vec),
-      Ray(Ray),
-      toIntersections )
-import Shape (defaultPlane, defaultSphere, normalAt, intersect)
-import Intersection ( headSL )
+import Intersection (atSL, headSL)
+import Shape (defaultCube, defaultPlane, defaultSphere, intersect, normalAt)
 import Test.HUnit (Test (..), assertEqual)
 import Transformation (translation)
+import Types
+  ( Intersection (Intersection),
+    Point (Point),
+    Ray (Ray),
+    Shape (..),
+    Vec (Vec),
+    toIntersections,
+  )
 
 testSphereNormalAt :: Test
 testSphereNormalAt = TestCase $ do
@@ -57,5 +58,93 @@ testPlaneIntersectBelow = TestCase $ do
       xs = p `intersect` r
   assertEqual "below" (Intersection 1 p) (headSL xs)
 
+testCubeIntersectHit :: Test
+testCubeIntersectHit = TestCase $ do
+  let c = defaultCube
+      origins =
+        [ Point 5 0.5 0,
+          Point (-5) 0.5 0,
+          Point 0.5 5 0,
+          Point 0.5 (-5) 0,
+          Point 0.5 0 5,
+          Point 0.5 0 (-5),
+          Point 0 0.5 0
+        ]
+      directions =
+        [ Vec (-1) 0 0,
+          Vec 1 0 0,
+          Vec 0 (-1) 0,
+          Vec 0 1 0,
+          Vec 0 0 (-1),
+          Vec 0 0 1,
+          Vec 0 0 1
+        ]
+      t1s = [4, 4, 4, 4, 4, 4, -1]
+      t2s = [6, 6, 6, 6, 6, 6, 1]
+      rays = zipWith Ray origins directions
+      xs = map (intersect c) rays
+      get_t (Intersection t _) = t
+  assertEqual "t1 when ray strikes cube" t1s (map (get_t . headSL) xs)
+  assertEqual "t2 when ray strikes cube" t2s (map (get_t . (`atSL` 1)) xs)
+
+testCubeIntersectMiss :: Test
+testCubeIntersectMiss = TestCase $ do
+  let c = defaultCube
+      origins =
+        [ Point (-2) 0 0,
+          Point 0 (-2) 0,
+          Point 0 0 (-2),
+          Point 2 0 2,
+          Point 0 2 2,
+          Point 2 2 0
+        ]
+      directions =
+        [ Vec 0.2673 0.5345 0.8018,
+          Vec 0.8018 0.2673 0.5345,
+          Vec 0.5345 0.8018 0.2673,
+          Vec 0 0 (-1),
+          Vec 0 (-1) 0,
+          Vec (-1) 0 0
+        ]
+      rays = zipWith Ray origins directions
+      xs = map (intersect c) rays
+  assertEqual "no intersections when ray misses" (replicate 6 0) (map length xs)
+
+testCubeNormalAt :: Test
+testCubeNormalAt = TestCase $ do
+  let c = defaultCube
+  let points =
+        [ Point 1 0.5 (-0.8),
+          Point (-1) (-0.2) 0.9,
+          Point (-0.4) 1 (-0.1),
+          Point 0.3 (-1) (-0.7),
+          Point (-0.6) 0.3 1,
+          Point 0.4 0.4 (-1),
+          Point 1 1 1,
+          Point (-1) (-1) (-1)
+        ]
+  let normals =
+        [ Vec 1 0 0,
+          Vec (-1) 0 0,
+          Vec 0 1 0,
+          Vec 0 (-1) 0,
+          Vec 0 0 1,
+          Vec 0 0 (-1),
+          Vec 1 0 0,
+          Vec (-1) 0 0
+        ]
+  assertEqual "normal at various points" normals (map (normalAt c) points)
+
 tests :: Test
-tests = TestList [testSphereNormalAt, testSphereNormalAtTranslated, testPlaneIntersectParallel, testPlaneIntersectCoplanar, testPlaneIntersectAbove, testPlaneIntersectBelow]
+tests =
+  TestList
+    [ testSphereNormalAt,
+      testSphereNormalAtTranslated,
+      testPlaneIntersectParallel,
+      testPlaneIntersectCoplanar,
+      testPlaneIntersectAbove,
+      testPlaneIntersectBelow,
+      testCubeIntersectHit,
+      testCubeIntersectMiss,
+      testCubeNormalAt
+    ]

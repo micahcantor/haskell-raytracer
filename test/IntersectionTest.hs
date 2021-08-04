@@ -13,7 +13,9 @@ import Types
     Ray (Ray),
     Shape (..),
     Vec (Vec),
-    toIntersections, approxEq, getMaterial
+    getMaterial,
+    toIntersections,
+    (~=),
   )
 import VecPoint (epsilon)
 
@@ -164,7 +166,7 @@ testComputeUnderPoint = TestCase $ do
   assertBool "under point goes under" (underZ > epsilon / 2)
   assertBool "under point is under surface" (pointZ < underZ)
 
-testSchlickTotalInternal :: Test 
+testSchlickTotalInternal :: Test
 testSchlickTotalInternal = TestCase $ do
   let shape = glassSphere
       r = Ray (Point 0 0 (sqrt 2 / 2)) (Vec 0 1 0)
@@ -189,7 +191,7 @@ testSchlickN2GreaterN1 = TestCase $ do
       xs = toIntersections [Intersection 1.8589 shape]
       comps = prepareComputation r (headSL xs) xs
       reflectance = schlick comps
-  assertBool "schlick approximation for when n2 > n1" (approxEq reflectance 0.48873)
+  assertBool "schlick approximation for when n2 > n1" (reflectance ~= 0.48873)
 
 tests :: Test
 tests =
