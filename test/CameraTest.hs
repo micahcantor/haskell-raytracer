@@ -5,7 +5,7 @@ import Types
       Vec(Vec),
       Ray(Ray),
       Color(Color),
-      Camera(hSize, vSize, camTransform) )
+      Camera(..) )
 import Test.HUnit (Test (..), assertEqual)
 import Camera (defaultCamera, rayForPixel, render )
 import Canvas ((!))

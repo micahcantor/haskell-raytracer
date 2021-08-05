@@ -9,7 +9,7 @@ import Material (black, checkerPattern, defaultMaterial, gradientPattern, ringPa
 import Shape (defaultPlane, defaultSphere)
 import Transformation (rotationX, scaling, translation, viewTransform)
 import Types
-  ( Camera (camTransform, fov, hSize, vSize),
+  ( Camera (transform, fov, hSize, vSize),
     Canvas,
     Color (Color),
     Material (..),
@@ -38,11 +38,11 @@ drawScene = render camera world
           camTransform = viewTransform (Point 0 1.5 (-5)) (Point 0 1 0) (Vec 0 1 0)
         }
     floor =
-      defaultPlane {planeMaterial = defaultMaterial {pattern = Just $ stripePattern white (Color 1 0 0)}}
+      defaultPlane {material = defaultMaterial {pattern = Just $ stripePattern white (Color 1 0 0)}}
     middle =
       defaultSphere
-        { sphereTransform = translation (-0.5) 1 0.5,
-          sphereMaterial =
+        { transform = translation (-0.5) 1 0.5,
+          material =
             defaultMaterial
               { pattern = Just $ (gradientPattern (Color 1 0 0) white) {patTransform = translation (-1) 0 0 * scaling 2 1 1},
                 diffuse = 0.7,
@@ -51,18 +51,18 @@ drawScene = render camera world
         }
     left =
       defaultSphere
-        { sphereTransform = translation (-1.5) 0.33 (-0.75) * scaling 0.33 0.33 0.33,
-          sphereMaterial =
+        { transform = translation (-1.5) 0.33 (-0.75) * scaling 0.33 0.33 0.33,
+          material =
             defaultMaterial
-              { pattern = Just $ (gradientPattern (Color 1 0 0) white) {patTransform = translation (-1) 0 0 * scaling 2 1 1},
+              { pattern = Just $ (gradientPattern (Color 1 0 0) white) {paTransform = translation (-1) 0 0 * scaling 2 1 1},
                 diffuse = 0.7,
                 specular = 0.3
               }
         }
     right =
       defaultSphere
-        { sphereTransform = translation 1.5 0.5 (-0.5) * scaling 0.5 0.5 0.5,
-          sphereMaterial =
+        { transform = translation 1.5 0.5 (-0.5) * scaling 0.5 0.5 0.5,
+          material =
             defaultMaterial
               { pattern = Just $ (gradientPattern (Color 1 0 0) white) {patTransform = translation (-1) 0 0 * scaling 2 1 1},
                 diffuse = 0.7,

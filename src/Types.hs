@@ -1,4 +1,4 @@
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE NamedFieldPuns, DuplicateRecordFields #-}
 
 module Types where
 
@@ -22,6 +22,9 @@ instance Eq Point where
 
 (~=) :: Double -> Double -> Bool
 a ~= b = abs (a - b) < 0.0001
+
+(~/=) :: Double -> Double -> Bool
+a ~/= b = not (a ~= b)
 
 {- RAY -}
 data Ray = Ray Point Vec -- origin, direction
@@ -61,12 +64,19 @@ data Camera = Camera
 
 {- SHAPES -}
 data Shape
-  = Sphere {sphereMaterial :: Material, sphereTransform :: Transformation}
-  | Plane {planeMaterial :: Material, planeTransform :: Transformation}
-  | Cube {cubeMaterial :: Material, cubeTransform :: Transformation}
+  = Sphere {material :: Material, transform :: Transformation}
+  | Plane {material :: Material, transform :: Transformation}
+  | Cube {material :: Material, transform :: Transformation}
   | Cylinder
-      { cylindarMaterial :: Material,
-        cylinderTransform :: Transformation,
+      { material :: Material,
+        transform :: Transformation,
+        minY :: Double,
+        maxY :: Double,
+        closed :: Bool
+      }
+  | Cone
+      { material :: Material,
+        transform :: Transformation,
         minY :: Double,
         maxY :: Double,
         closed :: Bool
@@ -74,16 +84,18 @@ data Shape
   deriving (Show, Eq)
 
 getMaterial :: Shape -> Material
-getMaterial Sphere {sphereMaterial} = sphereMaterial
-getMaterial Plane {planeMaterial} = planeMaterial
-getMaterial Cube {cubeMaterial} = cubeMaterial
-getMaterial Cylinder {cylindarMaterial} = cylindarMaterial
+getMaterial Sphere {material} = material
+getMaterial Plane {material} = material
+getMaterial Cube {material} = material
+getMaterial Cylinder {material} = material
+getMaterial Cone {material} = material
 
 getTransformation :: Shape -> Transformation
-getTransformation Sphere {sphereTransform} = sphereTransform
-getTransformation Plane {planeTransform} = planeTransform
-getTransformation Cube {cubeTransform} = cubeTransform
-getTransformation Cylinder {cylinderTransform} = cylinderTransform
+getTransformation Sphere {transform} = transform
+getTransformation Plane {transform} = transform
+getTransformation Cube {transform} = transform
+getTransformation Cylinder {transform} = transform
+getTransformation Cone {transform} = transform
 
 {- Intersection -}
 data Intersection = Intersection Double Shape deriving (Show, Eq) -- t value, intersected object

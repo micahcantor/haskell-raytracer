@@ -19,7 +19,7 @@ import Types
       PointLight(PointLight),
       Color(Color),
       Canvas,
-      Camera(hSize, vSize, fov, camTransform) )
+      Camera(..) )
 
 drawScene :: Canvas
 drawScene = render camera world
@@ -40,15 +40,15 @@ drawScene = render camera world
       defaultPlane
     middle =
       defaultSphere
-        { sphereTransform = translation (-0.5) 1 0.5,
-          sphereMaterial = defaultMaterial {color = Color 0.1 1 0.5, diffuse = 0.7, specular = 0.3}
+        { transform = translation (-0.5) 1 0.5,
+          material = defaultMaterial {color = Color 0.1 1 0.5, diffuse = 0.7, specular = 0.3}
         }
     left =
       defaultSphere
-        { sphereTransform = translation (-1.5) 0.33 (-0.75) * scaling 0.33 0.33 0.33,
-          sphereMaterial = defaultMaterial {color = Color 1 0.8 0.1, diffuse = 0.7, specular = 0.3}
+        { transform = translation (-1.5) 0.33 (-0.75) * scaling 0.33 0.33 0.33,
+          material = defaultMaterial {color = Color 1 0.8 0.1, diffuse = 0.7, specular = 0.3}
         }
-    right = middle {sphereTransform = translation 1.5 0.5 (-0.5) * scaling 0.5 0.5 0.5}
+    right = middle {transform = translation 1.5 0.5 (-0.5) * scaling 0.5 0.5 0.5}
 
 runChapter9 :: IO ()
 runChapter9 = writeCanvas "spheres-on-plane.ppm" drawScene

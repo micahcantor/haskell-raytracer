@@ -5,13 +5,13 @@ import Material (defaultMaterial, glass, white)
 import Shape (defaultCube, defaultPlane)
 import Transformation (viewTransform)
 import Types
-  ( Camera (camTransform, fov, hSize, vSize),
+  ( Camera (transform, fov, hSize, vSize),
     Canvas,
     Color (Color),
     Material (color, reflective),
     Point (Point),
     PointLight (PointLight),
-    Shape (cubeMaterial, planeMaterial),
+    Shape (cubeMaterial, material),
     Vec (Vec),
     World (lights, objects),
   )
@@ -34,12 +34,12 @@ drawScene = render camera world
         }
     floor =
       defaultPlane
-        { planeMaterial =
+        { material =
             defaultMaterial {reflective = 0.4}
         }
     redGlassCube =
       defaultCube
-        { cubeMaterial =
+        { material =
             glass {color = Color 0.3 0 0}
         }
 

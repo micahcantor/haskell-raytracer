@@ -1,7 +1,7 @@
 module Exercises.Chapter6 where
 
 import Canvas (canvasWidth, initCanvas, writeCanvas, setPixel)
-import Color (cMult, toPPM)
+import Color (toPPM)
 import Data.Matrix (mapPos, getElem)
 import Light (lighting)
 import Material (defaultMaterial)
@@ -41,7 +41,7 @@ drawSphere canvas =
   where
     black = Color 0 0 0
     material = defaultMaterial { color = Color 1 0.2 1 }
-    sphere = defaultSphere  { sphereMaterial = material }
+    sphere = defaultSphere  { material = material }
     light = PointLight (Point (-10) 10 (-10)) (Color 1 1 1)
     rayStart = Point 0 0 (-5)
     sphereCenter = Point 0 0 0

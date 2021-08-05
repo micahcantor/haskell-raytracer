@@ -45,7 +45,7 @@ testCheckerAt = TestCase $ do
 
 testPatternAtShape :: Test
 testPatternAtShape = TestCase $ do
-  let sphere = defaultSphere {sphereTransform = scaling 2 2 2}
+  let sphere = defaultSphere {transform = scaling 2 2 2}
       pat = testPattern
    in assertEqual "pattern with shape transform" (Color 1 1.5 2) (patternAtShape pat sphere (Point 2 3 4))
 
@@ -57,7 +57,7 @@ testPatternAtShapePatternTransform = TestCase $ do
 
 testPatternAtBothTransform :: Test
 testPatternAtBothTransform = TestCase $ do
-  let sphere = defaultSphere {sphereTransform = scaling 2 2 2}
+  let sphere = defaultSphere {transform = scaling 2 2 2}
       pat = testPattern {patTransform = translation 0.5 1 1.5}
    in assertEqual "pattern with shape and pattern transform" (Color 0.75 0.5 0.25) (patternAtShape pat sphere (Point 2.5 3 3.5))
 

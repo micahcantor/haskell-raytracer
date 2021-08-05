@@ -1,8 +1,8 @@
 module ShapeTest where
 
 import Intersection (atSL, headSL)
-import Shape (defaultCube, defaultPlane, defaultSphere, intersect, normalAt, defaultCylinder)
-import Test.HUnit (Test (..), assertEqual, AssertionPredicable (assertionPredicate), assertBool)
+import Shape (defaultCube, defaultPlane, defaultSphere, intersect, normalAt, defaultCylinder, defaultCone)
+import Test.HUnit (Test (..), assertEqual, assertBool)
 import Transformation (translation)
 import Types
   ( Intersection (Intersection),
@@ -10,7 +10,7 @@ import Types
     Ray (Ray),
     Shape (..),
     Vec (Vec),
-    toIntersections,
+    toIntersections, (~=)
   )
 import VecPoint (normalize)
 
@@ -27,7 +27,7 @@ testSphereNormalAt = TestCase $ do
 
 testSphereNormalAtTranslated :: Test
 testSphereNormalAtTranslated = TestCase $ do
-  let s = defaultSphere {sphereTransform = translation 0 1 0}
+  let s = defaultSphere {transform = translation 0 1 0}
       n = normalAt s (Point 0 1.70711 (-0.70711))
   assertEqual "equality" (Vec 0 0.70711 (-0.70711)) n
 
@@ -260,6 +260,72 @@ testClosedCylinderNormalAt = TestCase $ do
         ]
   assertEqual "normal at closed cylinder" normals (map (normalAt cyl) points)
 
+testConeIntersect :: Test
+testConeIntersect = TestCase $ do
+  let cone = defaultCone
+      origins =
+        [ Point 0 0 (-5),
+          Point 0 0 (-5),
+          Point 1 1 (-5)
+        ]
+      directions =
+        [ Vec 0 0 1,
+          Vec 1 1 1,
+          Vec (-0.5) (-1) 1
+        ]
+      t0s = [5, 8.66025, 4.55006]
+      t1s = [5, 8.66025, 49.44994]
+      rays = zipWith Ray origins (map normalize directions)
+      xs = map (intersect cone) rays
+      get_t (Intersection t _) = t
+      result_t0s = map (get_t . headSL) xs
+      result_t1s = map (get_t . (`atSL` 1)) xs
+  assertBool "all rays strike two intersections" (all (\lst -> length lst == 2) xs)
+  assertBool "t0 when ray strikes cone" (all (== True) (zipWith (~=) t0s result_t0s))
+  assertBool "t1 when ray strikes cone" (all (== True) (zipWith (~=) t1s result_t1s))
+
+testConeIntersectParallel :: Test
+testConeIntersectParallel = TestCase $ do
+  let cone = defaultCone
+      direction = normalize (Vec 0 1 1)
+      r = Ray (Point 0 0 (-1)) direction
+      xs = cone `intersect` r
+      get_t (Intersection t _) = t
+  assertEqual "cone intersected once" 1 (length xs)
+  assertBool "cone intersected at t" (get_t (headSL xs) ~= 0.35355)
+
+testConeIntersectCap :: Test 
+testConeIntersectCap = TestCase $ do
+  let cone = defaultCone {minY = -0.5, maxY = 0.5, closed = True}
+      origins =
+        [ Point 0 0 (-5),
+          Point 0 0 (-0.25),
+          Point 0 0 (-0.25)
+        ]
+      directions =
+        [ Vec 0 1 0,
+          Vec 0 1 1,
+          Vec 0 1 0
+        ]
+      counts = [0, 2, 4]
+      rays = zipWith Ray origins (map normalize directions)
+      xs = map (intersect cone) rays
+  assertEqual "counts of intersections with caps" counts (map length xs)
+
+testConeNormalAt :: Test 
+testConeNormalAt = TestCase $ do
+  let cone = defaultCone 
+      points =
+        [ Point 0 0 0,
+          Point 1 1 1,
+          Point (-1) (-1) 0
+        ]
+      normals =
+        [ Vec 0 0 0,
+          Vec 1 (-sqrt 2) 1,
+          Vec (-1) 1 0
+        ]
+  assertEqual "normals on infinte cone" normals (map (normalAt cone) points)
 
 tests :: Test
 tests =
@@ -278,5 +344,9 @@ tests =
       testCylinderNormalAt,
       testIntersectConstrainedCylinder,
       testIntersectClosedCylinder,
-      testClosedCylinderNormalAt
+      testClosedCylinderNormalAt,
+      testConeIntersect,
+      testConeIntersectParallel,
+      testConeIntersectCap,
+      testConeNormalAt
     ]
