@@ -24,7 +24,7 @@ testHitPos = TestCase $ do
   let s = defaultSphere
       i1 = Intersection 1 s
       i2 = Intersection 2 s
-      xs = SL.toSortedList [i1, i2]
+      xs = toIntersections [i1, i2]
   assertEqual "his position" (hit xs) (Just i1)
 
 testHitSomeNeg :: Test
@@ -32,7 +32,7 @@ testHitSomeNeg = TestCase $ do
   let s = defaultSphere
       i1 = Intersection (-1) s
       i2 = Intersection 2 s
-      xs = SL.toSortedList [i1, i2]
+      xs = toIntersections [i1, i2]
   assertEqual "hit position some negative" (hit xs) (Just i2)
 
 testHitAllNeg :: Test
@@ -40,7 +40,7 @@ testHitAllNeg = TestCase $ do
   let s = defaultSphere
       i1 = Intersection (-1) s
       i2 = Intersection (-2) s
-      xs = SL.toSortedList [i1, i2]
+      xs = toIntersections [i1, i2]
   assertEqual "hit nothing" (hit xs) Nothing
 
 testHitMix :: Test
@@ -50,7 +50,7 @@ testHitMix = TestCase $ do
       i2 = Intersection 7 s
       i3 = Intersection (-3) s
       i4 = Intersection 2 s
-      xs = SL.toSortedList [i1, i2, i3, i4]
+      xs = toIntersections [i1, i2, i3, i4]
   assertEqual "hit a mix of interesections" (hit xs) (Just i4)
 
 testIntersectionTangent :: Test

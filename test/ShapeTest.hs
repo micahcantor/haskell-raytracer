@@ -1,8 +1,8 @@
 module ShapeTest where
 
 import Intersection (atSL, headSL)
-import Shape (defaultCube, defaultPlane, defaultSphere, intersect, normalAt)
-import Test.HUnit (Test (..), assertEqual)
+import Shape (defaultCube, defaultPlane, defaultSphere, intersect, normalAt, defaultCylinder)
+import Test.HUnit (Test (..), assertEqual, AssertionPredicable (assertionPredicate), assertBool)
 import Transformation (translation)
 import Types
   ( Intersection (Intersection),
@@ -12,6 +12,7 @@ import Types
     Vec (Vec),
     toIntersections,
   )
+import VecPoint (normalize)
 
 testSphereNormalAt :: Test
 testSphereNormalAt = TestCase $ do
@@ -108,12 +109,12 @@ testCubeIntersectMiss = TestCase $ do
         ]
       rays = zipWith Ray origins directions
       xs = map (intersect c) rays
-  assertEqual "no intersections when ray misses" (replicate 6 0) (map length xs)
+  assertBool "no intersections when ray misses cube" (all null xs)
 
 testCubeNormalAt :: Test
 testCubeNormalAt = TestCase $ do
   let c = defaultCube
-  let points =
+      points =
         [ Point 1 0.5 (-0.8),
           Point (-1) (-0.2) 0.9,
           Point (-0.4) 1 (-0.1),
@@ -123,7 +124,7 @@ testCubeNormalAt = TestCase $ do
           Point 1 1 1,
           Point (-1) (-1) (-1)
         ]
-  let normals =
+      normals =
         [ Vec 1 0 0,
           Vec (-1) 0 0,
           Vec 0 1 0,
@@ -133,7 +134,132 @@ testCubeNormalAt = TestCase $ do
           Vec 1 0 0,
           Vec (-1) 0 0
         ]
-  assertEqual "normal at various points" normals (map (normalAt c) points)
+  assertEqual "cube normal at various points" normals (map (normalAt c) points)
+
+testCylinderIntersectHit :: Test
+testCylinderIntersectHit = TestCase $ do
+  let cyl = defaultCylinder
+      origins =
+        [ Point 1 0 (-5),
+          Point 0 0 (-5),
+          Point 0.5 0 (-5)
+        ]
+      directions =
+        [ Vec 0 0 1,
+          Vec 0 0 1,
+          Vec 0.1 1 1
+        ]
+      t0s = [5, 4, 6.80798]
+      t1s = [5, 6, 7.08872]
+      normalized = map normalize directions
+      rays = zipWith Ray origins directions
+      xs = map (intersect cyl) rays
+      get_t (Intersection t _) = t
+  assertEqual "t0 when ray strikes cyl" t0s (map (get_t . headSL) xs)
+  assertEqual "t1 when ray strikes cyl" t1s (map (get_t . (`atSL` 1)) xs)
+
+testCylinderIntersectMiss :: Test
+testCylinderIntersectMiss = TestCase $ do
+  let cyl = defaultCylinder
+      origins =
+        [ Point 1 0 0,
+          Point 0 0 0,
+          Point 0 0 (-5)
+        ]
+      directions =
+        [ Vec 0 1 0,
+          Vec 0 1 0,
+          Vec 1 1 1
+        ]
+      normalized = map normalize directions
+      rays = zipWith Ray origins directions
+      xs = map (intersect cyl) rays
+   in assertBool "no intersection when ray misses cyl" (all null xs)
+
+testCylinderNormalAt :: Test
+testCylinderNormalAt = TestCase $ do
+  let cyl = defaultCylinder
+      points =
+        [ Point 1 0 0,
+          Point 0 5 (-1),
+          Point 0 (-2) 1,
+          Point (-1) 1 0
+        ]
+      normals =
+        [ Vec 1 0 0,
+          Vec 0 0 (-1),
+          Vec 0 0 1,
+          Vec (-1) 0 0
+        ]
+  assertEqual "normal at various points" normals (map (normalAt cyl) points)
+
+testIntersectConstrainedCylinder :: Test
+testIntersectConstrainedCylinder = TestCase $ do
+  let cyl = defaultCylinder {minY = 1, maxY = 2}
+      origins =
+        [ Point 0 1.5 0,
+          Point 0 3 (-5),
+          Point 0 0 (-5),
+          Point 0 2 (-5),
+          Point 0 1 (-5),
+          Point 0 1.5 (-2)
+        ]
+      directions =
+        [ Vec 0.1 1 0,
+          Vec 0 0 1,
+          Vec 0 0 1,
+          Vec 0 0 1,
+          Vec 0 0 1,
+          Vec 0 0 1
+        ]
+      counts = [0, 0, 0, 0, 0, 2]
+      rays = zipWith Ray origins directions
+      xs = map (intersect cyl) rays
+  assertEqual "intersect constrained cyl" counts (map length xs)
+
+testIntersectClosedCylinder :: Test
+testIntersectClosedCylinder = TestCase $ do
+  let cyl = defaultCylinder {minY = 1, maxY = 2, closed = True}
+      origins =
+        [ Point 0 3 0,
+          Point 0 3 (-2),
+          Point 0 4 (-2),
+          Point 0 0 (-2),
+          Point 0 (-1) (-2)
+        ]
+      directions =
+        [ Vec 0 (-1) 0,
+          Vec 0 (-1) 2,
+          Vec 0 (-1) 1,
+          Vec 0 1 2,
+          Vec 0 2 1
+        ]
+      counts = replicate 5 2
+      rays = zipWith Ray origins directions
+      xs = map (intersect cyl) rays
+  assertEqual "intersect closed cyl" counts (map length xs)
+
+testClosedCylinderNormalAt :: Test
+testClosedCylinderNormalAt = TestCase $ do
+  let cyl = defaultCylinder {minY = 1, maxY = 2, closed = True}
+      points =
+        [ Point 0 1 0,
+          Point 0.5 1 0,
+          Point 0 1 0.5,
+          Point 0 2 0,
+          Point 0.5 2 0,
+          Point 0 2 0.5
+        ]
+      normals =
+        [ Vec 0 (-1) 0,
+          Vec 0 (-1) 0,
+          Vec 0 (-1) 0,
+          Vec 0 1 0,
+          Vec 0 1 0,
+          Vec 0 1 0
+        ]
+  assertEqual "normal at closed cylinder" normals (map (normalAt cyl) points)
+
 
 tests :: Test
 tests =
@@ -146,5 +272,11 @@ tests =
       testPlaneIntersectBelow,
       testCubeIntersectHit,
       testCubeIntersectMiss,
-      testCubeNormalAt
+      testCubeNormalAt,
+      testCylinderIntersectMiss,
+      testCubeIntersectHit,
+      testCylinderNormalAt,
+      testIntersectConstrainedCylinder,
+      testIntersectClosedCylinder,
+      testClosedCylinderNormalAt
     ]

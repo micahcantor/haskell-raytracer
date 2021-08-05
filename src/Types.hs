@@ -1,3 +1,5 @@
+{-# LANGUAGE NamedFieldPuns #-}
+
 module Types where
 
 {- Declares types for export to avoid cyclic module annoyances -}
@@ -62,17 +64,26 @@ data Shape
   = Sphere {sphereMaterial :: Material, sphereTransform :: Transformation}
   | Plane {planeMaterial :: Material, planeTransform :: Transformation}
   | Cube {cubeMaterial :: Material, cubeTransform :: Transformation}
+  | Cylinder
+      { cylindarMaterial :: Material,
+        cylinderTransform :: Transformation,
+        minY :: Double,
+        maxY :: Double,
+        closed :: Bool
+      }
   deriving (Show, Eq)
 
 getMaterial :: Shape -> Material
-getMaterial (Sphere material _) = material
-getMaterial (Plane material _) = material
-getMaterial (Cube material _) = material
+getMaterial Sphere {sphereMaterial} = sphereMaterial
+getMaterial Plane {planeMaterial} = planeMaterial
+getMaterial Cube {cubeMaterial} = cubeMaterial
+getMaterial Cylinder {cylindarMaterial} = cylindarMaterial
 
 getTransformation :: Shape -> Transformation
-getTransformation (Sphere _ transform) = transform
-getTransformation (Plane _ transform) = transform
-getTransformation (Cube _ transform) = transform
+getTransformation Sphere {sphereTransform} = sphereTransform
+getTransformation Plane {planeTransform} = planeTransform
+getTransformation Cube {cubeTransform} = cubeTransform
+getTransformation Cylinder {cylinderTransform} = cylinderTransform
 
 {- Intersection -}
 data Intersection = Intersection Double Shape deriving (Show, Eq) -- t value, intersected object
