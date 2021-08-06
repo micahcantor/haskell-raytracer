@@ -1,6 +1,6 @@
 module LightTest (tests) where
 
-import Light (lighting)
+import Light (lighting, areaLight, pointOnLight)
 import Material (black, defaultMaterial, stripePattern, white)
 import Shape (defaultSphere)
 import Test.HUnit (Test (..), assertEqual, runTestTT)
@@ -13,7 +13,7 @@ import Types
     Vec (Vec),
     World (..),
   )
-import World (defaultWorld)
+import World (defaultWorld, intensityAt)
 
 testLightingBetween :: Test
 testLightingBetween = TestCase $ do
@@ -101,6 +101,33 @@ testLightingIntensity = TestCase $ do
       colors = map (lighting mat shape light p eyev normalv) intensities
   assertEqual "lighting intensity is correct" results colors
 
+testCreateAreaLight :: Test
+testCreateAreaLight = TestCase $ do
+  let corner = Point 0 0 0
+      v1 = Vec 2 0 0
+      v2 = Vec 0 0 1
+      light = areaLight corner (v1, 4) (v2, 2) white
+      result = AreaLight corner (Vec 0.5 0 0) (Vec 0 0 0.5) 4 2 8 white (Point 1 0 0.5)
+  assertEqual "create area light" light result
+
+testPointOnLight :: Test
+testPointOnLight = TestCase $ do
+  let corner = Point 0 0 0
+      v1 = Vec 2 0 0
+      v2 = Vec 0 0 1
+      light = areaLight corner (v1, 4) (v2, 2) white
+      us = [0, 1, 0, 2, 3]
+      vs = [0, 0, 1, 0, 1]
+      results = 
+        [ Point 0.25 0 0.25,
+          Point 0.75 0 0.25,
+          Point 0.25 0 0.75,
+          Point 1.25 0 0.25,
+          Point 1.75 0 0.75
+        ]
+      points = zipWith (pointOnLight light) us vs
+  assertEqual "point on light" results points
+
 tests :: Test
 tests =
   TestList
@@ -111,5 +138,7 @@ tests =
       testLightingBehind,
       testLightingInShadow,
       testLightingPattern,
-      testLightingIntensity
+      testLightingIntensity,
+      testCreateAreaLight,
+      testPointOnLight
     ]

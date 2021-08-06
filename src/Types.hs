@@ -1,4 +1,5 @@
-{-# LANGUAGE NamedFieldPuns, DuplicateRecordFields #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Types where
 
@@ -151,7 +152,22 @@ instance Eq Pattern where
   (Pattern c1 t1 _) == (Pattern c2 t2 _) = c1 == c2 && t1 == t2
 
 {- LIGHT -}
-data Light = PointLight {position :: Point, lightColor :: Color}
+data Light
+  = PointLight
+      { position :: Point,
+        lightColor :: Color
+      }
+  | AreaLight
+      { corner :: Point,
+        uvec :: Vec,
+        vvec :: Vec,
+        usteps :: Int,
+        vsteps :: Int,
+        samples :: Int,
+        lightColor :: Color,
+        position :: Point -- temp!!
+      }
+  deriving (Show, Eq)
 
 {- TRANSFORMATION -}
 type Transformation = Matrix Double

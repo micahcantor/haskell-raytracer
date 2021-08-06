@@ -2,7 +2,7 @@ module WorldTest where
 
 import Data.SortedList as SL (fromSortedList)
 import Intersection (atSL, headSL, prepareComputation)
-import Material (black, defaultMaterial, defaultPattern, testPattern)
+import Material (black, defaultMaterial, defaultPattern, testPattern, white)
 import Shape (defaultPlane, defaultSphere)
 import Test.HUnit (Test (..), assertEqual, runTestTT)
 import Transformation (translation)
@@ -30,6 +30,7 @@ import World
     refractedColor,
     shadeHit,
   )
+import Light (areaLight)
 
 testIntersect :: Test
 testIntersect = TestCase $ do
@@ -220,6 +221,24 @@ testIntensityAt = TestCase $ do
       intensities = map (\p -> intensityAt light p w) points
   assertEqual "intensity at works" results intensities
 
+testAreaLightIntensityAt :: Test 
+testAreaLightIntensityAt = TestCase $ do
+  let w = defaultWorld 
+      corner = Point (-0.5) (-0.5) (-5)
+      v1 = Vec 1 0 0
+      v2 = Vec 0 1 0
+      light = areaLight corner (v1, 2) (v2, 2) white
+      points =
+        [ Point 0 0 2,
+          Point 1 (-1) 2,
+          Point 1.5 0 2,
+          Point 1.25 1.25 3,
+          Point 0 0 (-2)
+        ]
+      results = [0, 0.25, 0.5, 0.75, 1]
+      intensities = map (\p -> intensityAt light p w) points
+  assertEqual "area light intensity at" results intensities
+
 tests :: Test
 tests =
   TestList
@@ -238,5 +257,6 @@ tests =
       testShadeHitRefraction,
       testShadeHitReflectionRefraction,
       testIsShadowedOcclusion,
-      testIntensityAt
+      testIntensityAt,
+      testAreaLightIntensityAt
     ]

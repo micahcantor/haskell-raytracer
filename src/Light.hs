@@ -1,22 +1,22 @@
 module Light where
 
+import Color (scale)
+import Debug.Trace (traceShow)
 import Material (black, defaultMaterial, patternAtShape)
 import Types
   ( Color,
-    Material (ambient, color, diffuse, pattern, shininess, specular),
-    Pattern (..),
-    Point,
     Light (..),
-    Vec,
-    Shape(..), (~=)
+    Material (..),
+    Pattern (..),
+    Point(..),
+    Shape (..),
+    Vec(..),
+    (~=),
   )
-import VecPoint (dot, normalize, pSub, reflect, vNeg)
-import Color (scale)
-import Debug.Trace (traceShow)
+import VecPoint (dot, normalize, pSub, reflect, vNeg, vDiv, pAdd, pMult, vMult, vpAdd, vAdd)
 
 lighting :: Material -> Shape -> Light -> Point -> Vec -> Vec -> Double -> Color
 lighting material shape light point eyev normalv intensity =
-  traceShow (ambientLight, diffuseLight, specularLight) 
   ambientLight + diffuseLight + specularLight
   where
     -- find color of surface if the material is patterned
@@ -34,15 +34,13 @@ lighting material shape light point eyev normalv intensity =
     lightDotNormal = lightv `dot` normalv
     diffuseLight
       | lightDotNormal < 0 = black
-      | intensity ~= 0 = black
-      | otherwise = 
+      | otherwise =
         let scalar = diffuse material * lightDotNormal * intensity
          in scalar `scale` effectiveColor
     specularLight
       | lightDotNormal < 0 = black
       | reflectDotEye < 0 = black
-      | intensity ~= 0 = black
-      | otherwise = 
+      | otherwise =
         let scalar = factor * specular material * intensity
          in scalar `scale` lightColor light
       where
@@ -51,3 +49,27 @@ lighting material shape light point eyev normalv intensity =
         -- and the eye vector. Negative value means light is on the other side of surface.
         reflectDotEye = reflectv `dot` eyev
         factor = reflectDotEye ** shininess material
+
+areaLight :: Point -> (Vec, Int) -> (Vec, Int) -> Color -> Light
+areaLight corner (ufull, usteps) (vfull, vsteps) color =
+  let uvec = ufull `vDiv` fromIntegral usteps
+      vvec = vfull `vDiv` fromIntegral vsteps
+      samples = usteps * vsteps
+   in AreaLight
+        { corner = corner,
+          uvec = uvec,
+          vvec = vvec,
+          usteps = usteps,
+          vsteps = vsteps,
+          samples = samples,
+          lightColor = color,
+          position = Point 1 0 0.5
+        }
+
+pointOnLight :: Light -> Double -> Double -> Point
+-- return the middle cell on an area light
+pointOnLight AreaLight {corner, uvec, vvec} u v =
+  let v1 = (u + 0.5) `vMult` uvec
+      v2 = (v + 0.5) `vMult` vvec
+   in corner `vpAdd` (v1 `vAdd` v2)
+  
