@@ -22,7 +22,7 @@ testLightingBetween = TestCase $ do
       eyev = Vec 0 0 (-1)
       normalv = Vec 0 0 (-1)
       light = PointLight (Point 0 0 (-10)) (Color 1 1 1)
-      result = lighting m defaultSphere light pos eyev normalv 0.0
+      result = lighting m defaultSphere light pos eyev normalv 1.0
   assertEqual "between" (Color 1.9 1.9 1.9) result
 
 testLightingBetween45 :: Test
@@ -32,7 +32,7 @@ testLightingBetween45 = TestCase $ do
       eyev = Vec 0 (sqrt 2 / 2) (- sqrt 2 / 2)
       normalv = Vec 0 0 (-1)
       light = PointLight (Point 0 0 (-10)) (Color 1 1 1)
-      result = lighting m defaultSphere light pos eyev normalv 0.0
+      result = lighting m defaultSphere light pos eyev normalv 1.0
   assertEqual "between 45" (Color 1.0 1.0 1.0) result
 
 testLightingOpposite45 :: Test
@@ -42,7 +42,7 @@ testLightingOpposite45 = TestCase $ do
       eyev = Vec 0 0 (-1)
       normalv = Vec 0 0 (-1)
       light = PointLight (Point 0 10 (-10)) (Color 1 1 1)
-      result = lighting m defaultSphere light pos eyev normalv 0.0
+      result = lighting m defaultSphere light pos eyev normalv 1.0
   assertEqual "opposite 45" (Color 0.7364 0.7364 0.7364) result
 
 testLightingInPath :: Test
@@ -52,7 +52,7 @@ testLightingInPath = TestCase $ do
       eyev = Vec 0 (- sqrt 2 / 2) (- sqrt 2 / 2)
       normalv = Vec 0 0 (-1)
       light = PointLight (Point 0 10 (-10)) (Color 1 1 1)
-      result = lighting m defaultSphere light pos eyev normalv 0.0
+      result = lighting m defaultSphere light pos eyev normalv 1.0
   assertEqual "in path" (Color 1.6364 1.6364 1.6364) result
 
 testLightingBehind :: Test
@@ -62,7 +62,7 @@ testLightingBehind = TestCase $ do
       eyev = Vec 0 0 (-1)
       normalv = Vec 0 0 (-1)
       light = PointLight (Point 0 0 10) (Color 1 1 1)
-      result = lighting m defaultSphere light pos eyev normalv 0.0
+      result = lighting m defaultSphere light pos eyev normalv 1.0
   assertEqual "behind" (Color 0.1 0.1 0.1) result
 
 testLightingInShadow :: Test
