@@ -1,4 +1,4 @@
-module WorldTest (tests) where
+module WorldTest where
 
 import Data.SortedList as SL (fromSortedList)
 import Intersection (atSL, headSL, prepareComputation)
@@ -9,17 +9,27 @@ import Transformation (translation)
 import Types
   ( Color (Color),
     Intersection (Intersection),
+    Light (..),
     Material (..),
     Pattern,
     Point (Point),
-    PointLight (PointLight),
     Ray (Ray),
     Shape (..),
     Vec (Vec),
     World (..),
     toIntersections,
   )
-import World (colorAt, defaultWorld, intersect, isShadowed, maxRecursions, reflectedColor, refractedColor, shadeHit)
+import World
+  ( colorAt,
+    defaultWorld,
+    intensityAt,
+    intersect,
+    isShadowed,
+    maxRecursions,
+    reflectedColor,
+    refractedColor,
+    shadeHit,
+  )
 
 testIntersect :: Test
 testIntersect = TestCase $ do
@@ -76,34 +86,6 @@ testColorAtHit = TestCase $ do
   let w = defaultWorld
       r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
   assertEqual "colorAt a hit" (Color 0.38066 0.47583 0.2855) (colorAt w r maxRecursions)
-
-testIsShadowedNotColinear :: Test
-testIsShadowedNotColinear = TestCase $ do
-  let w = defaultWorld
-      p = Point 0 10 0
-      light = head (lights w)
-  assertEqual "isShadowed colinear" False (isShadowed w p light)
-
-testIsShadowedIsBehindSphere :: Test
-testIsShadowedIsBehindSphere = TestCase $ do
-  let w = defaultWorld
-      p = Point 10 (-10) 10
-      light = head (lights w)
-  assertEqual "isShadowed between sphere and light" True (isShadowed w p light)
-
-testIsShadowedInFrontLight :: Test
-testIsShadowedInFrontLight = TestCase $ do
-  let w = defaultWorld
-      p = Point (-20) 20 (-20)
-      light = head (lights w)
-  assertEqual "isShadowed in front of light" False (isShadowed w p light)
-
-testIsShadowedInFrontSphere :: Test
-testIsShadowedInFrontSphere = TestCase $ do
-  let w = defaultWorld
-      p = Point (-2) 2 (-2)
-      light = head (lights w)
-  assertEqual "isShadowed in front of sphere" False (isShadowed w p light)
 
 testReflectedColorNonReflective :: Test
 testReflectedColorNonReflective = TestCase $ do
@@ -178,7 +160,7 @@ testShadeHitRefraction = TestCase $ do
           { transform = translation 0 (-1) 0,
             material = defaultMaterial {transparency = 0.5, refractive = 1.5}
           }
-      ball = 
+      ball =
         defaultSphere
           { transform = translation 0 (-3.5) (-0.5),
             material = defaultMaterial {color = Color 1 0 0, ambient = 0.5}
@@ -196,7 +178,7 @@ testShadeHitReflectionRefraction = TestCase $ do
           { transform = translation 0 (-1) 0,
             material = defaultMaterial {transparency = 0.5, reflective = 0.5, refractive = 1.5}
           }
-      ball = 
+      ball =
         defaultSphere
           { transform = translation 0 (-3.5) (-0.5),
             material = defaultMaterial {color = Color 1 0 0, ambient = 0.5}
@@ -206,6 +188,37 @@ testShadeHitReflectionRefraction = TestCase $ do
       xs = toIntersections [Intersection (sqrt 2) floor]
       comps = prepareComputation r (headSL xs) xs
   assertEqual "shading transparent and refractive material" (Color 0.93391 0.69643 0.69243) (shadeHit w comps 5)
+
+testIsShadowedOcclusion :: Test
+testIsShadowedOcclusion = TestCase $ do
+  let w = defaultWorld
+      lightPos = Point (-10) (-10) (-10)
+      points =
+        [ Point (-10) (-10) (-10),
+          Point 10 10 10,
+          Point (-20) (-20) (-20),
+          Point (-5) (-5) (-5)
+        ]
+      shadowed = [False, True, False, False]
+  assertEqual "is shadowed test for occlusion" shadowed (map (\p -> isShadowed w p lightPos) points)
+
+testIntensityAt :: Test
+testIntensityAt = TestCase $ do
+  let w = defaultWorld
+      light = head (lights w)
+      points =
+        [ Point 0 1.0001 0,
+          Point (-1.0001) 0 0,
+          Point 0 0 (-1.0001),
+          Point 0 0 1.0001,
+          Point 1.0001 0 0,
+          Point 0 (-1.0001) 0,
+          Point 0 0 0
+        ]
+      results =
+        [1, 1, 1, 0, 0, 0, 0]
+      intensities = map (\p -> intensityAt light p w) points
+  assertEqual "intensity at works" results intensities
 
 tests :: Test
 tests =
@@ -217,15 +230,13 @@ tests =
       testShadeHitReflective,
       testColorAtMiss,
       testColorAtHit,
-      testIsShadowedNotColinear,
-      testIsShadowedIsBehindSphere,
-      testIsShadowedInFrontLight,
-      testIsShadowedInFrontSphere,
       testReflectedColorNonReflective,
       testReflectedColorReflective,
       testRefractedColorMaxRecursion,
       testRefractedColorInternalReflection,
       testRefractedColorRefraction,
       testShadeHitRefraction,
-      testShadeHitReflectionRefraction
+      testShadeHitReflectionRefraction,
+      testIsShadowedOcclusion,
+      testIntensityAt
     ]

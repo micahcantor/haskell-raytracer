@@ -151,10 +151,10 @@ instance Eq Pattern where
   (Pattern c1 t1 _) == (Pattern c2 t2 _) = c1 == c2 && t1 == t2
 
 {- LIGHT -}
-data PointLight = PointLight {position :: Point, intensity :: Color}
+data Light = PointLight {position :: Point, lightColor :: Color}
 
 {- TRANSFORMATION -}
 type Transformation = Matrix Double
 
 {- WORLD -}
-data World = World {lights :: [PointLight], objects :: [Shape]}
+data World = World {lights :: [Light], objects :: [Shape]}

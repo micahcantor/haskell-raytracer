@@ -6,15 +6,17 @@ import Types
     Material (ambient, color, diffuse, pattern, shininess, specular),
     Pattern (..),
     Point,
-    PointLight (intensity, position),
+    Light (..),
     Vec,
-    Shape(..)
+    Shape(..), (~=)
   )
 import VecPoint (dot, normalize, pSub, reflect, vNeg)
 import Color (scale)
+import Debug.Trace (traceShow)
 
-lighting :: Material -> Shape -> PointLight -> Point -> Vec -> Vec -> Bool -> Color
-lighting material shape light point eyev normalv inShadow =
+lighting :: Material -> Shape -> Light -> Point -> Vec -> Vec -> Double -> Color
+lighting material shape light point eyev normalv intensity =
+  traceShow (ambientLight, diffuseLight, specularLight) 
   ambientLight + diffuseLight + specularLight
   where
     -- find color of surface if the material is patterned
@@ -22,7 +24,7 @@ lighting material shape light point eyev normalv inShadow =
       Nothing -> color material
       Just p -> patternAtShape p shape point
     -- combine surface color and light's color
-    effectiveColor = surfaceColor * intensity light
+    effectiveColor = surfaceColor * lightColor light
     -- find the direction to the light source
     lightv = normalize (position light `pSub` point)
     -- compute the ambient contribution
@@ -32,13 +34,17 @@ lighting material shape light point eyev normalv inShadow =
     lightDotNormal = lightv `dot` normalv
     diffuseLight
       | lightDotNormal < 0 = black
-      | inShadow = black
-      | otherwise = (diffuse material * lightDotNormal) `scale` effectiveColor
+      | intensity ~= 0 = black
+      | otherwise = 
+        let scalar = diffuse material * lightDotNormal * intensity
+         in scalar `scale` effectiveColor
     specularLight
       | lightDotNormal < 0 = black
       | reflectDotEye < 0 = black
-      | inShadow = black
-      | otherwise = (factor * specular material) `scale` intensity light
+      | intensity ~= 0 = black
+      | otherwise = 
+        let scalar = factor * specular material * intensity
+         in scalar `scale` lightColor light
       where
         reflectv = reflect (vNeg lightv) normalv
         -- reflectDotEye represents the cosine of the angle between the reflect vector

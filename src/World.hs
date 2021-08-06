@@ -16,7 +16,7 @@ import Types
     Intersections,
     Material (..),
     Point (..),
-    PointLight (PointLight),
+    Light (..),
     Ray (..),
     Shape (..),
     Vec (..),
@@ -48,13 +48,14 @@ shadeHit w@(World lights _) comps remaining =
   foldr1 blend colors
   where
     Computation {object, point, eye, normal, over} = comps
-    applyLighting light
+    applyLighting light@(PointLight lightPos _)
       | objReflective > 0 && objTransparency > 0 =
         surface + (reflectance `scale` reflected) + ((1 - reflectance) `scale` refracted)
       | otherwise = surface + reflected + refracted
       where
         objMaterial = getMaterial object
-        surface = lighting objMaterial object light point eye normal (isShadowed w over light)
+        intensity = intensityAt light over w
+        surface = lighting objMaterial object light point eye normal intensity
         reflected = reflectedColor w comps remaining
         refracted = refractedColor w comps remaining
         (objReflective, objTransparency) = (reflective objMaterial, transparency objMaterial)
@@ -72,11 +73,11 @@ colorAt world ray remaining =
     intersections = world `World.intersect` ray
     comps i = prepareComputation ray i intersections
 
-isShadowed :: World -> Point -> PointLight -> Bool
+isShadowed :: World -> Point -> Point -> Bool
 -- calculate intersections from a given point to all lights in world,
 -- if there is a hit, then return true if the t value is less than the magnitude of the ray,
 -- i.e. the hit is between the point and the light
-isShadowed world point (PointLight lightPos _) =
+isShadowed world point lightPos =
   let pointToLight = lightPos `pSub` point
       distance = magnitude pointToLight
       ray = Ray point (normalize pointToLight)
@@ -84,6 +85,11 @@ isShadowed world point (PointLight lightPos _) =
    in case hit intersections of
         Just (Intersection t _) -> t < distance
         Nothing -> False
+
+intensityAt :: Light -> Point -> World -> Double
+intensityAt PointLight {position} point w
+  | isShadowed w point position = 0
+  | otherwise = 1
 
 reflectedColor :: World -> Computation -> Int -> Color
 -- spawns a new reflection ray when intersected material is reflective
@@ -115,3 +121,4 @@ refractedColor w comps remaining
     refractRay = Ray under direction
     color = colorAt w refractRay (remaining - 1)
     refractColor = matTransparency `scale` color
+
