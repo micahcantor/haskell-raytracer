@@ -2,7 +2,7 @@
 
 This repo contains my work-in-progress code for implementing the raytracer described in the book *The Raytracer Challenge* by James Buck.
 
-Currently I have implemented the code through chapter 11, reflection and refraction.
+Currently I have implemented the code through chapter 13, cylinders, plus [the bonus chapter on area lights and soft shadows](http://raytracerchallenge.com/bonus/area-light.html).
 
 ## Directory structure:
 - **src**: Contains the primary raytracer code
@@ -11,7 +11,4 @@ Currently I have implemented the code through chapter 11, reflection and refract
 - **demo**: Contains examples of scenes rendered by the raytracer
 
 ## Rendered Examples:
-![Shaded Sphere](demo/shaded-sphere.png)
-![Three Spheres with Plane](demo/three-spheres-plane.png)
-![Three Spheres with Patterns](demo/three-patterned-spheres.png)
-![Reflection Spheres](demo/reflection-spheres.jpg)
+![Soft Shadows](demo/soft-shadows.png)
