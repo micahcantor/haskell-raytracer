@@ -8,11 +8,18 @@ module Types where
 import Data.Matrix (Matrix)
 import Data.SortedList as SL (SortedList, toSortedList)
 
+(~=) :: Double -> Double -> Bool
+a ~= b = abs (a - b) < 0.0001
+
+(~/=) :: Double -> Double -> Bool
+a ~/= b = not (a ~= b)
+
 {- VECPOINT -}
 data Vec = Vec Double Double Double deriving (Show)
 
 data Point = Point Double Double Double deriving (Show)
 
+-- for testing convenience
 instance Eq Vec where
   (Vec x1 y1 z1) == (Vec x2 y2 z2) =
     x1 ~= x2 && y1 ~= y2 && z1 ~= z2
@@ -20,12 +27,6 @@ instance Eq Vec where
 instance Eq Point where
   (Point x1 y1 z1) == (Point x2 y2 z2) =
     x1 ~= x2 && y1 ~= y2 && z1 ~= z2
-
-(~=) :: Double -> Double -> Bool
-a ~= b = abs (a - b) < 0.0001
-
-(~/=) :: Double -> Double -> Bool
-a ~/= b = not (a ~= b)
 
 {- RAY -}
 data Ray = Ray Point Vec -- origin, direction
@@ -164,8 +165,8 @@ data Light
         usteps :: Int,
         vsteps :: Int,
         samples :: Int,
-        lightColor :: Color,
-        position :: Point -- temp!!
+        jitter :: Bool,
+        lightColor :: Color
       }
   deriving (Show, Eq)
 

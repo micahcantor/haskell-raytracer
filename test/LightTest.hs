@@ -1,6 +1,6 @@
 module LightTest (tests) where
 
-import Light (lighting, areaLight, pointOnLight)
+import Light (areaLight, lighting, pointOnLight)
 import Material (black, defaultMaterial, stripePattern, white)
 import Shape (defaultSphere)
 import Test.HUnit (Test (..), assertEqual, runTestTT)
@@ -13,6 +13,7 @@ import Types
     Vec (Vec),
     World (..),
   )
+import VecPoint (normalize, pSub)
 import World (defaultWorld, intensityAt)
 
 testLightingBetween :: Test
@@ -90,7 +91,7 @@ testLightingIntensity :: Test
 testLightingIntensity = TestCase $ do
   let [s1, s2] = objects defaultWorld
       mat = defaultMaterial {ambient = 0.1, diffuse = 0.9, specular = 0, color = white}
-      shape = s1 {material = mat }
+      shape = s1 {material = mat}
       w = defaultWorld {lights = [PointLight (Point 0 0 (-10)) white], objects = [shape, s2]}
       light = head (lights w)
       p = Point 0 0 (-1)
@@ -106,19 +107,20 @@ testCreateAreaLight = TestCase $ do
   let corner = Point 0 0 0
       v1 = Vec 2 0 0
       v2 = Vec 0 0 1
-      light = areaLight corner (v1, 4) (v2, 2) white
-      result = AreaLight corner (Vec 0.5 0 0) (Vec 0 0 0.5) 4 2 8 white (Point 1 0 0.5)
+      light = areaLight corner (v1, 4) (v2, 2) False white
+      result = AreaLight corner (Vec 0.5 0 0) (Vec 0 0 0.5) 4 2 8 False white
   assertEqual "create area light" light result
 
 testPointOnLight :: Test
+-- tests point on light without random jittering
 testPointOnLight = TestCase $ do
   let corner = Point 0 0 0
       v1 = Vec 2 0 0
       v2 = Vec 0 0 1
-      light = areaLight corner (v1, 4) (v2, 2) white
+      light = areaLight corner (v1, 4) (v2, 2) False white
       us = [0, 1, 0, 2, 3]
       vs = [0, 0, 1, 0, 1]
-      results = 
+      results =
         [ Point 0.25 0 0.25,
           Point 0.75 0 0.25,
           Point 0.25 0 0.75,
@@ -127,6 +129,31 @@ testPointOnLight = TestCase $ do
         ]
       points = zipWith (pointOnLight light) us vs
   assertEqual "point on light" results points
+
+testLightingAreaLight :: Test
+testLightingAreaLight = TestCase $ do
+  let corner = Point (-0.5) (-0.5) (-0.5)
+      v1 = Vec 1 0 0
+      v2 = Vec 0 1 0
+      light = areaLight corner (v1, 2) (v2, 2) False white
+      shape =
+        defaultSphere
+          { material =
+              defaultMaterial
+                { ambient = 0.1,
+                  diffuse = 0.9,
+                  specular = 0,
+                  color = white
+                }
+          }
+      eye = Point 0 0 (-5)
+      points = [Point 0 0 (-1), Point 0 0.7071 (-0.7071)]
+      results = [Color 0.9965 0.9965 0.9965, Color 0.6232 0.6232 0.6232]
+      eyevs = map (\pt -> normalize (eye `pSub` pt)) points
+      normalvs = map (\(Point x y z) -> Vec x y z) points
+      applyLighting pt eyev normalv = lighting (material shape) shape light pt eyev normalv 1.0
+      lightings = zipWith3 applyLighting points eyevs normalvs
+  assertEqual "lighting with an area light works" results lightings
 
 tests :: Test
 tests =
@@ -140,5 +167,6 @@ tests =
       testLightingPattern,
       testLightingIntensity,
       testCreateAreaLight,
-      testPointOnLight
+      testPointOnLight,
+      testLightingAreaLight
     ]

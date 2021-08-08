@@ -4,8 +4,9 @@ module World where
 
 import Color (scale)
 import Data.SortedList as SL (fromSortedList)
+import Debug.Trace (traceShow)
 import Intersection (atSL, headSL, hit, prepareComputation, schlick)
-import Light (lighting, pointOnLight)
+import Light (lighting, pointOnLight, samplePoints)
 import Material (black, defaultMaterial, testPattern, white)
 import Shape (defaultPlane, defaultSphere, intersect)
 import Transformation (scaling, translation)
@@ -14,9 +15,9 @@ import Types
     Computation (..),
     Intersection (Intersection),
     Intersections,
+    Light (..),
     Material (..),
     Point (..),
-    Light (..),
     Ray (..),
     Shape (..),
     Vec (..),
@@ -26,7 +27,6 @@ import Types
     toIntersections,
   )
 import VecPoint (dot, magnitude, normalize, pSub, vMult, vSub)
-import Debug.Trace (traceShow)
 
 defaultWorld :: World
 defaultWorld =
@@ -49,7 +49,7 @@ shadeHit w@(World lights _) comps remaining =
   foldr1 blend colors
   where
     Computation {object, point, eye, normal, over} = comps
-    applyLighting light@(PointLight lightPos _)
+    applyLighting light
       | objReflective > 0 && objTransparency > 0 =
         surface + (reflectance `scale` reflected) + ((1 - reflectance) `scale` refracted)
       | otherwise = surface + reflected + refracted
@@ -91,10 +91,8 @@ intensityAt :: Light -> Point -> World -> Double
 intensityAt PointLight {position} point w
   | isShadowed w point position = 0
   | otherwise = 1
-intensityAt light@AreaLight {usteps, vsteps, samples} point w =
-  let us = map fromIntegral [0 .. usteps - 1]
-      vs = map fromIntegral [0 .. vsteps - 1]
-      lightPositions = [pointOnLight light u v | u <- us, v <- vs]
+intensityAt light@AreaLight {samples} point w =
+  let lightPositions = samplePoints light
       notShadowed = filter (\pos -> not (isShadowed w pos point)) lightPositions
       total = length notShadowed
    in fromIntegral total / fromIntegral samples
@@ -129,4 +127,3 @@ refractedColor w comps remaining
     refractRay = Ray under direction
     color = colorAt w refractRay (remaining - 1)
     refractColor = matTransparency `scale` color
-

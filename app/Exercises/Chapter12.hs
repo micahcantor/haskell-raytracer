@@ -5,13 +5,13 @@ import Material (defaultMaterial, glass, white)
 import Shape (defaultCube, defaultPlane)
 import Transformation (viewTransform)
 import Types
-  ( Camera (transform, fov, hSize, vSize),
+  ( Camera (..),
     Canvas,
     Color (Color),
     Material (color, reflective),
     Point (Point),
-    PointLight (PointLight),
-    Shape (cubeMaterial, material),
+    Light (PointLight),
+    Shape (..),
     Vec (Vec),
     World (lights, objects),
   )
@@ -27,8 +27,8 @@ drawScene = render camera world
         }
     camera =
       defaultCamera
-        { hSize = 1000,
-          vSize = 750,
+        { hSize = 333,
+          vSize = 250,
           fov = pi / 3,
           camTransform = viewTransform (Point (-2.6) 1.5 (-3.9)) (Point (-0.6) 1 (-0.8)) (Vec 0 1 0)
         }

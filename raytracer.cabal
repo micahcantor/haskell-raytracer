@@ -18,15 +18,14 @@ extra-source-files:  CHANGELOG.md
 library
   exposed-modules:     Camera, Canvas, Color, Intersection, Light, Material, Ray, Shape, Transformation, Types, VecPoint, World
   -- other-modules:
-  -- other-extensions:
-  build-depends:       base ^>=4.14.1.0, matrix, sorted-list, mtl
-  extensions:          NamedFieldPuns
+  build-depends:       base ^>=4.14.1.0, matrix, sorted-list, mtl, random
+  default-extensions:  NamedFieldPuns
   hs-source-dirs:      src
   default-language:    Haskell2010
 
 executable raytracer
   main-is:             Main.hs
-  other-modules:       Exercises.Chapter12
+  other-modules:       Exercises.SoftShadows, Exercises.Chapter12, Exercises.Chapter11
   -- other-extensions:
   build-depends:       base ^>=4.14.1.0, raytracer, matrix
   hs-source-dirs:      app
@@ -49,4 +48,4 @@ test-suite raytracer-test
   hs-source-dirs:      test
   main-is:             Main.hs
   other-modules:       CameraTest, CanvasTest, ColorTest, IntersectionTest, LightTest, MaterialTest, RayTest, ShapeTest, TransformationTest, VecPointTest, WorldTest
-  build-depends:       base ^>=4.14.1.0, test-framework, test-framework-hunit, HUnit, sorted-list, raytracer
+  build-depends:       base ^>=4.14.1.0, test-framework, test-framework-hunit, HUnit, sorted-list, raytracer, matrix

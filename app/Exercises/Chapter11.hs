@@ -9,13 +9,13 @@ import Material (black, checkerPattern, defaultMaterial, glass, gradientPattern,
 import Shape (defaultPlane, defaultSphere, glassSphere)
 import Transformation (rotationX, scaling, translation, viewTransform)
 import Types
-  ( Camera (transform, fov, hSize, vSize),
+  ( Camera (..),
     Canvas,
     Color (Color),
     Material (..),
     Pattern (..),
     Point (Point),
-    PointLight (PointLight),
+    Light (PointLight),
     Shape (..),
     Vec (Vec),
     World (lights, objects),
@@ -48,11 +48,11 @@ drawScene = render camera world
         }
     blueGlassSphere =
       glassSphere
-        { patTransform = translation 0.6 0.7 (-0.6) * scaling 0.7 0.7 0.7,
+        { transform = translation 0.6 0.7 (-0.6) * scaling 0.7 0.7 0.7,
           material = glass {color = Color 0 0 0.2}
         }
     left =
-      blueGlassSphere {patTransform = translation (-0.7) 0.5 (-0.8) * scaling 0.5 0.5 0.5}
+      blueGlassSphere {transform = translation (-0.7) 0.5 (-0.8) * scaling 0.5 0.5 0.5}
 
 runChapter11 :: IO ()
 runChapter11 = writeCanvas "reflection-spheres.ppm" drawScene
