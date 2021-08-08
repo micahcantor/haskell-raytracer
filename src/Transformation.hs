@@ -69,7 +69,7 @@ rotationY r =
 
 rotationZ :: Double -> Transformation
 rotationZ r =
-  let values = [(cos r, (1, 1)), (- sin r, (3, 1)), (sin r, (2, 1)), (cos r, (2, 2))]
+  let values = [(cos r, (1, 1)), (- sin r, (1, 2)), (sin r, (2, 1)), (cos r, (2, 2))]
    in setElems values identity
 
 shearing :: Double -> Double -> Double -> Double -> Double -> Double -> Transformation
@@ -88,7 +88,8 @@ shearing xy xz yx yz zx zy =
 viewTransform :: Point -> Point -> Vec -> Transformation
 viewTransform from@(Point fromX fromY fromZ) to up =
   let forward@(Vec forwardX forwardY forwardZ) = normalize (to `pSub` from)
-      left@(Vec leftX leftY leftZ) = forward `cross` up
+      upn = normalize up
+      left@(Vec leftX leftY leftZ) = forward `cross` upn
       trueUp@(Vec trueUpX trueUpY trueUpZ) = left `cross` forward
       values =
         [ (leftX, (1, 1)),
@@ -96,7 +97,7 @@ viewTransform from@(Point fromX fromY fromZ) to up =
           (leftZ, (1, 3)),
           (trueUpX, (2, 1)),
           (trueUpY, (2, 2)),
-          (trueUpX, (2, 3)),
+          (trueUpZ, (2, 3)),
           (- forwardX, (3, 1)),
           (- forwardY, (3, 2)),
           (- forwardZ, (3, 3))
