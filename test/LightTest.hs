@@ -132,7 +132,7 @@ testPointOnLight = TestCase $ do
 
 testLightingAreaLight :: Test
 testLightingAreaLight = TestCase $ do
-  let corner = Point (-0.5) (-0.5) (-0.5)
+  let corner = Point (-0.5) (-0.5) (-5)
       v1 = Vec 1 0 0
       v2 = Vec 0 1 0
       light = areaLight corner (v1, 2) (v2, 2) False white
