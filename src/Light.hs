@@ -19,9 +19,9 @@ import Debug.Trace (traceShow)
 
 lighting :: Material -> Shape -> Light -> Point -> Vec -> Vec -> Double -> Color
 lighting material shape light point eyev normalv intensity =
-  {- traceShow ("positions: " ++ show positions)
+  traceShow ("positions: " ++ show positions)
   traceShow ("lightvs: " ++ show lightvs)
-  traceShow ("lightDotNormals: " ++ show lightDotNormals) -}
+  traceShow ("lightDotNormals: " ++ show lightDotNormals)
   ambientLight + totalDiffuse + totalSpecular
   where
     -- find color of surface if the material is patterned

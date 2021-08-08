@@ -1,6 +1,7 @@
 module Main where
 
-import Exercises.Chapter12 ( runChapter12 )
+import Exercises.Chapter12
+import Exercises.SoftShadows
 
 main :: IO ()
-main = runChapter12
+main = runSoftShadows

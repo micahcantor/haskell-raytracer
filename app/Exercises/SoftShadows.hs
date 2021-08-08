@@ -25,8 +25,8 @@ drawScene = render camera world
     world = defaultWorld {objects = [floor, s1, s2], lights = [light]}
     camera =
       defaultCamera
-        { hSize = 400,
-          vSize = 160,
+        { hSize = 1200,
+          vSize = 480,
           fov = 0.7854,
           camTransform = viewTransform (Point (-3) 1 2.5) (Point 0 0.5 0) (Vec 0 1 0)
         }
