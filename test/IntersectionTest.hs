@@ -1,8 +1,9 @@
 module IntersectionTest (tests) where
 
+import Constants ( defaultSphere, glassSphere, defaultPlane )
 import qualified Data.SortedList as SL
 import Intersection (atSL, headSL, hit, prepareComputation, schlick)
-import Shape (defaultPlane, defaultSphere, glassSphere, intersect)
+import Shape (intersect)
 import Test.HUnit (Test (..), assertBool, assertEqual)
 import Transformation (scaling, translation)
 import Types

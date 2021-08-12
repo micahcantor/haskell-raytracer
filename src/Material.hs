@@ -3,37 +3,17 @@ module Material where
 import Transformation (identity, inverse, mpMult)
 import Types (Color (..), Material (..), Pattern (..), Point (..), Shape (..))
 import Color (scale)
-
-defaultMaterial :: Material
-defaultMaterial =
-  Material
-    { color = Color 1 1 1,
-      ambient = 0.1,
-      diffuse = 0.9,
-      specular = 0.9,
-      shininess = 200,
-      reflective = 0.0,
-      refractive = 1.0,
-      transparency = 0,
-      pattern = Nothing
-    }
-
-glass :: Material
-glass = defaultMaterial {transparency = 1.0, refractive = 1.5}
+import Shape (worldToObject)
 
 defaultPattern :: Pattern
 defaultPattern = Pattern [] identity (\_ (Point x y z) -> Color x y z)
-
-black, white :: Color
-black = Color 0 0 0
-white = Color 1 1 1
 
 patternAtShape :: Pattern -> Shape -> Point -> Color
 patternAtShape p@(Pattern _ patternTransform colorAt) shape worldPoint =
   colorAt p patternPoint
   where
     shapeTransform = transform shape
-    objectPoint = inverse shapeTransform `mpMult` worldPoint
+    objectPoint = worldToObject shape worldPoint
     patternPoint = inverse patternTransform `mpMult` objectPoint
 
 {- Stripes -}

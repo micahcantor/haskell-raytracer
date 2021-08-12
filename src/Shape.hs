@@ -4,7 +4,6 @@ module Shape where
 
 import Data.Matrix (transpose)
 import qualified Data.SortedList as SL
-import Material (defaultMaterial, glass)
 import qualified Ray (transform)
 import Transformation (identity, inverse, mpMult, mvMult, scaling, translation)
 import Types
@@ -170,28 +169,3 @@ normalToWorld shape normal =
     newNormal =
       normalize $ transpose (inverse (transform shape)) `mvMult` normal
 
-{- Default shapes -}
-defaultSphere :: Shape
-defaultSphere = Sphere defaultMaterial identity Nothing
-
-glassSphere :: Shape
-glassSphere = Sphere glass identity Nothing
-
-defaultPlane :: Shape
-defaultPlane = Plane defaultMaterial identity Nothing
-
-defaultCube :: Shape
-defaultCube = Cube defaultMaterial identity Nothing
-
-defaultCylinder :: Shape
-defaultCylinder = Cylinder defaultMaterial identity Nothing negInf posInf False
-
-defaultCone :: Shape
-defaultCone = Cone defaultMaterial identity Nothing negInf posInf False
-
-defaultGroup :: Shape
-defaultGroup = Group identity Nothing []
-
-posInf, negInf :: Double
-posInf = 1 / 0
-negInf = -1 / 0

@@ -1,8 +1,8 @@
 module LightTest (tests) where
 
+import Constants ( defaultSphere, defaultMaterial, black, white )
 import Light (areaLight, lighting, pointOnLight)
-import Material (black, defaultMaterial, stripePattern, white)
-import Shape (defaultSphere)
+import Material (stripePattern)
 import Test.HUnit (Test (..), assertEqual, runTestTT)
 import Types
   ( Color (Color),

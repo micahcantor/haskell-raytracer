@@ -1,9 +1,9 @@
 module WorldTest where
 
+import Constants ( defaultSphere, defaultPlane, defaultMaterial, black, white ) 
 import Data.SortedList as SL (fromSortedList)
 import Intersection (atSL, headSL, prepareComputation)
-import Material (black, defaultMaterial, defaultPattern, testPattern, white)
-import Shape (defaultPlane, defaultSphere)
+import Material (defaultPattern, testPattern)
 import Test.HUnit (Test (..), assertEqual, runTestTT)
 import Transformation (translation)
 import Types

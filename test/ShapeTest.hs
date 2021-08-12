@@ -1,7 +1,14 @@
 module ShapeTest where
 
+import Constants
+    ( defaultSphere,
+      defaultPlane,
+      defaultCube,
+      defaultCylinder,
+      defaultCone,
+      defaultGroup )
 import Intersection (atSL, headSL)
-import Shape (defaultCube, defaultPlane, defaultSphere, intersect, normalAt, defaultCylinder, defaultCone, defaultGroup, addChild, addChildren, worldToObject, normalToWorld, localNormalAt)
+import Shape (intersect, normalAt, addChild, addChildren, worldToObject, normalToWorld, localNormalAt)
 import Test.HUnit (Test (..), assertEqual, assertBool)
 import Transformation (translation, scaling, rotationY)
 import Types

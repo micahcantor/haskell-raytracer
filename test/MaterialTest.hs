@@ -1,7 +1,7 @@
 module MaterialTest where
 
-import Material (black, checkerPattern, defaultPattern, gradientPattern, patternAtShape, ringPattern, stripeAt, stripePattern, white, testPattern)
-import Shape (defaultSphere)
+import Constants ( defaultSphere, black, white ) 
+import Material (checkerPattern, defaultPattern, gradientPattern, patternAtShape, ringPattern, stripeAt, stripePattern, testPattern)
 import Test.HUnit (Test (..), assertEqual)
 import Transformation (scaling, translation)
 import Types (Color (..), Pattern (..), Point (Point), Shape (..))

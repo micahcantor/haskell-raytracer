@@ -1,8 +1,9 @@
 module Light where
 
+import Constants ( black )
 import Color (scale)
 import GHC.IO.Unsafe (unsafePerformIO)
-import Material (black, defaultMaterial, patternAtShape)
+import Material (patternAtShape)
 import System.Random (randomRIO)
 import Types
   ( Color,

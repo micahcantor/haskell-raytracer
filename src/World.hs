@@ -2,13 +2,14 @@
 
 module World where
 
+import Constants ( defaultSphere, defaultMaterial, black, white, defaultSphere )
 import Color (scale)
 import Data.SortedList as SL (fromSortedList)
 import Debug.Trace (traceShow)
 import Intersection (atSL, headSL, hit, prepareComputation, schlick)
 import Light (lighting, pointOnLight, samplePoints)
-import Material (black, defaultMaterial, testPattern, white)
-import Shape (defaultPlane, defaultSphere, intersect)
+import Material (testPattern)
+import Shape (intersect)
 import Transformation (scaling, translation)
 import Types
   ( Color (..),
