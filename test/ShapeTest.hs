@@ -1,16 +1,16 @@
 module ShapeTest where
 
 import Intersection (atSL, headSL)
-import Shape (defaultCube, defaultPlane, defaultSphere, intersect, normalAt, defaultCylinder, defaultCone)
+import Shape (defaultCube, defaultPlane, defaultSphere, intersect, normalAt, defaultCylinder, defaultCone, defaultGroup, addChild, addChildren, worldToObject, normalToWorld)
 import Test.HUnit (Test (..), assertEqual, assertBool)
-import Transformation (translation)
+import Transformation (translation, scaling, rotationY)
 import Types
   ( Intersection (Intersection),
     Point (Point),
     Ray (Ray),
     Shape (..),
     Vec (Vec),
-    toIntersections, (~=)
+    toIntersections, (~=), fromIntersections
   )
 import VecPoint (normalize)
 
@@ -327,6 +327,68 @@ testConeNormalAt = TestCase $ do
         ]
   assertEqual "normals on infinte cone" normals (map (normalAt cone) points)
 
+testEmptyGroupIntersect :: Test
+testEmptyGroupIntersect = TestCase $ do
+  let g = defaultGroup
+      r = Ray (Point 0 0 0) (Vec 0 0 1)
+      xs = g `intersect` r
+  assertEqual "empty group has no intersection" (toIntersections []) xs
+
+testGroupIntersect :: Test 
+testGroupIntersect = TestCase $ do
+  let s1 = defaultSphere
+      s2 = defaultSphere {transform = translation 0 0 (-3)}
+      s3 = defaultSphere {transform = translation 5 0 0}
+      (g, [s1', s2', s3']) = addChildren defaultGroup [s1, s2, s3]
+      r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
+      xs = fromIntersections (g `intersect` r)
+      objAt i xs = (\(Intersection _ obj) -> obj) (xs !! i)
+  print (length $ children g)
+  assertEqual "four intersections" 4 (length xs)
+  assertEqual "first is s2'" s2' (objAt 0 xs)
+  assertEqual "second is s2'" s2' (objAt 1 xs)
+  assertEqual "third is s1'" s1' (objAt 2 xs)
+  assertEqual "fourth is s1'" s1' (objAt 3 xs)
+
+testIntersectTransformedGroup :: Test 
+testIntersectTransformedGroup = TestCase $ do
+  let g = defaultGroup {transform = scaling 2 2 2}
+      s = defaultSphere {transform = translation 5 0 0}
+      (g', _) = addChild g s 
+      r = Ray (Point 10 0 (-10)) (Vec 0 0 1)
+      xs = fromIntersections $ g' `intersect` r
+  assertEqual "two intersections" 2 (length xs)
+
+testWorldToObject :: Test 
+testWorldToObject = TestCase $ do
+  let s = defaultSphere {transform = translation 5 0 0}
+      g1 = defaultGroup {transform = rotationY (pi / 2)}
+      g2 = defaultGroup {transform = scaling 2 2 2}
+      (g1', g2') = addChild g1 g2
+      (g2'', s') = addChild g2' s
+      p = worldToObject s' (Point (-2) 0 (-10))
+  assertEqual "world to object" (Point 0 0 (-1)) p
+
+testNormalToWorld :: Test 
+testNormalToWorld = TestCase $ do
+  let s = defaultSphere {transform = translation 5 0 0}
+      g1 = defaultGroup {transform = rotationY (pi / 2)}
+      g2 = defaultGroup {transform = scaling 1 2 3}
+      (g1', g2') = addChild g1 g2
+      (g2'', s') = addChild g2' s
+      n = normalToWorld s' (Vec (sqrt 3 / 3) (sqrt 3 / 3) (sqrt 3 / 3))
+  assertEqual "normal to world" (Vec 0.2857 0.4286 (-0.8571)) n
+
+testNormalAtGroupMember :: Test 
+testNormalAtGroupMember = TestCase $ do
+  let s = defaultSphere {transform = translation 5 0 0}
+      g1 = defaultGroup {transform = rotationY (pi / 2)}
+      g2 = defaultGroup {transform = scaling 1 2 3}
+      (g1', g2') = addChild g1 g2
+      (g2'', s') = addChild g2' s
+      n = normalAt s' (Point 1.7321 1.1547 (-5.5774))
+  assertEqual "normal at group member" (Vec 0.2857 0.4286 (-0.8571)) n
+
 tests :: Test
 tests =
   TestList
@@ -348,5 +410,11 @@ tests =
       testConeIntersect,
       testConeIntersectParallel,
       testConeIntersectCap,
-      testConeNormalAt
+      testConeNormalAt,
+      testEmptyGroupIntersect,
+      testGroupIntersect,
+      testIntersectTransformedGroup,
+      testWorldToObject,
+      testNormalToWorld,
+      testNormalAtGroupMember
     ]

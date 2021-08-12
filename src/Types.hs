@@ -6,7 +6,7 @@ module Types where
 {- Declares types for export to avoid cyclic module annoyances -}
 
 import Data.Matrix (Matrix)
-import Data.SortedList as SL (SortedList, toSortedList)
+import Data.SortedList as SL (SortedList, toSortedList, fromSortedList)
 
 (~=) :: Double -> Double -> Bool
 a ~= b = abs (a - b) < 0.0001
@@ -104,20 +104,6 @@ data Shape
       }
   deriving (Show, Eq)
 
-getMaterial :: Shape -> Material
-getMaterial Sphere {material} = material
-getMaterial Plane {material} = material
-getMaterial Cube {material} = material
-getMaterial Cylinder {material} = material
-getMaterial Cone {material} = material
-
-getTransformation :: Shape -> Transformation
-getTransformation Sphere {transform} = transform
-getTransformation Plane {transform} = transform
-getTransformation Cube {transform} = transform
-getTransformation Cylinder {transform} = transform
-getTransformation Cone {transform} = transform
-
 {- Intersection -}
 data Intersection = Intersection Double Shape deriving (Show, Eq) -- t value, intersected object
 
@@ -128,6 +114,9 @@ type Intersections = SL.SortedList Intersection
 
 toIntersections :: [Intersection] -> Intersections
 toIntersections = SL.toSortedList
+
+fromIntersections :: Intersections -> [Intersection]
+fromIntersections = SL.fromSortedList
 
 data Computation = Computation
   { inside :: Bool,

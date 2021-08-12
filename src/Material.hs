@@ -1,7 +1,7 @@
 module Material where
 
 import Transformation (identity, inverse, mpMult)
-import Types (Color (..), Material (..), Pattern (..), Point (..), Shape (..), getTransformation)
+import Types (Color (..), Material (..), Pattern (..), Point (..), Shape (..))
 import Color (scale)
 
 defaultMaterial :: Material
@@ -32,7 +32,7 @@ patternAtShape :: Pattern -> Shape -> Point -> Color
 patternAtShape p@(Pattern _ patternTransform colorAt) shape worldPoint =
   colorAt p patternPoint
   where
-    shapeTransform = getTransformation shape
+    shapeTransform = transform shape
     objectPoint = inverse shapeTransform `mpMult` worldPoint
     patternPoint = inverse patternTransform `mpMult` objectPoint
 

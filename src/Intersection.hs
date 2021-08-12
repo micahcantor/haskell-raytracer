@@ -15,7 +15,6 @@ import Types
     Ray (..),
     Shape (..),
     Vec (..),
-    getMaterial,
     toIntersections,
   )
 import VecPoint (dot, epsilon, reflect, vMult, vNeg, vpAdd, vpSub)
@@ -58,7 +57,7 @@ computeRefraction hit intersections =
       | i == hit = (n1', n2')
       | otherwise = go xs containers' (n1', n2')
       where
-        getFirstRefractive = refractive . getMaterial . head
+        getFirstRefractive = refractive . material . head
         n1'
           | i == hit = case containers of
             [] -> 1.0

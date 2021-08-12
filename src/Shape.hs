@@ -16,10 +16,9 @@ import Types
     Ray (..),
     Shape (..),
     Vec (..),
-    getTransformation,
     toIntersections,
     (~/=),
-    (~=),
+    (~=), fromIntersections
   )
 import VecPoint (dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd)
 
@@ -66,9 +65,8 @@ intersect shape ray =
     Group {children} ->
       foldMap (`intersect` transformedRay) children
   where
-    transform = getTransformation shape
-    transformedRay@(Ray origin direction) = 
-      Ray.transform ray (inverse transform)
+    transformedRay@(Ray origin direction) =
+      Ray.transform ray (inverse (transform shape))
     Point o_x o_y o_z = origin
     Vec d_x d_y d_z = direction
 
@@ -135,17 +133,24 @@ normalAt shape point =
        in if | d < 1 && y >= maxY - epsilon -> Vec 0 1 0
              | d < 1 && y <= minY + epsilon -> Vec 0 (-1) 0
              | otherwise -> Vec x normalY z
+    Group {} -> error "no local normal for groups"
   where
-    inverseTransform = inverse (getTransformation shape)
-    Point x y z = inverseTransform `mpMult` point
-    worldNormal localNormal = transpose inverseTransform `mvMult` localNormal
+    Point x y z = worldToObject shape point
+    worldNormal localNormal = normalToWorld shape localNormal
 
 {- Group helpers -}
 addChild :: Shape -> Shape -> (Shape, Shape)
-addChild group@Group {children} shape = 
+addChild group@Group {children} shape =
   let newShape = shape { parent = Just group }
       newGroup = group { children = newShape : children }
    in (newGroup, newShape)
+
+addChildren :: Shape -> [Shape] -> (Shape, [Shape])
+addChildren group = foldr f (group, [])
+  where
+    f x (g, xs) =
+      let (newGroup, newShape) = addChild g x
+       in (newGroup, newShape : xs)
 
 worldToObject :: Shape -> Point -> Point
 worldToObject shape point =
@@ -159,11 +164,11 @@ normalToWorld :: Shape -> Vec -> Vec
 normalToWorld shape normal =
   case parent shape of
      Nothing -> newNormal
-     Just p -> 
+     Just p ->
        let worldNormal = normalToWorld p newNormal
         in worldNormal
   where
-    newNormal = 
+    newNormal =
       normalize $ transpose (inverse (transform shape)) `mvMult` normal
 
 
@@ -185,6 +190,9 @@ defaultCylinder = Cylinder defaultMaterial identity Nothing negInf posInf False
 
 defaultCone :: Shape
 defaultCone = Cone defaultMaterial identity Nothing negInf posInf False
+
+defaultGroup :: Shape
+defaultGroup = Group identity Nothing []
 
 posInf, negInf :: Double
 posInf = 1 / 0

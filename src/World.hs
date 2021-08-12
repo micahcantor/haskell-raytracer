@@ -22,8 +22,6 @@ import Types
     Shape (..),
     Vec (..),
     World (..),
-    getMaterial,
-    getTransformation,
     toIntersections,
   )
 import VecPoint (dot, magnitude, normalize, pSub, vMult, vSub)
@@ -54,7 +52,7 @@ shadeHit w@(World lights _) comps remaining =
         surface + (reflectance `scale` reflected) + ((1 - reflectance) `scale` refracted)
       | otherwise = surface + reflected + refracted
       where
-        objMaterial = getMaterial object
+        objMaterial = material object
         intensity = intensityAt light over w
         surface = lighting objMaterial object light point eye normal intensity
         reflected = reflectedColor w comps remaining
@@ -106,7 +104,7 @@ reflectedColor w comps remaining
   | otherwise = reflectColor
   where
     Computation {object, over, reflect} = comps
-    matReflective = reflective (getMaterial object)
+    matReflective = reflective (material object)
     reflectRay = Ray over reflect
     reflectColor = matReflective `scale` colorAt w reflectRay (remaining - 1)
 
@@ -118,7 +116,7 @@ refractedColor w comps remaining
   | otherwise = refractColor
   where
     Computation {object, eye, normal, under, n1, n2} = comps
-    matTransparency = transparency (getMaterial object)
+    matTransparency = transparency (material object)
     nRatio = n1 / n2
     cos_i = eye `dot` normal
     sin2_t = (nRatio ^ 2) * (1 - (cos_i ^ 2))
