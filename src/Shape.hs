@@ -17,7 +17,7 @@ import Types
     Vec (..),
     toIntersections,
     (~/=),
-    (~=), fromIntersections
+    (~=), fromIntersections, Transformation
   )
 import VecPoint (dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd)
 
@@ -152,6 +152,12 @@ addChildren group = foldr f (group, [])
     f oldShape (oldGroup, oldShapes) =
       let (newGroup, newShape) = addChild oldGroup oldShape
        in (newGroup, newShape : oldShapes)
+
+updateTransform :: Shape -> Transformation -> Shape
+updateTransform group@Group{children} t = 
+  let transformed = group {transform = t}
+      setParent g c = c {parent = Just g}
+   in transformed {children = map (setParent transformed) children}
 
 worldToObject :: Shape -> Point -> Point
 worldToObject shape point =
