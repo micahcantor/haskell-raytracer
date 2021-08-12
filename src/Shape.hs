@@ -110,33 +110,32 @@ intersect shape ray =
 
 normalAt :: Shape -> Point -> Vec
 normalAt shape point =
-  case shape of
-    Sphere {} ->
-      let localNormal = Vec x y z
-       in normalize (worldNormal localNormal)
-    Plane {} ->
-      let localNormal = Vec 0 1 0
-       in normalize (worldNormal localNormal)
-    Cube {} ->
-      let maxc = maximum [abs x, abs y, abs z]
-       in if | maxc ~= abs x -> Vec x 0 0
-             | maxc ~= abs y -> Vec 0 y 0
-             | maxc ~= abs z -> Vec 0 0 z
-    Cylinder {minY, maxY} ->
-      let d = x ^ 2 + z ^ 2
-       in if | d < 1 && y >= maxY - epsilon -> Vec 0 1 0
-             | d < 1 && y <= minY + epsilon -> Vec 0 (-1) 0
-             | otherwise -> Vec x 0 z
-    Cone {minY, maxY} ->
-      let d = x ^ 2 + z ^ 2
-          normalY = if y > 0 then - (sqrt d) else sqrt d
-       in if | d < 1 && y >= maxY - epsilon -> Vec 0 1 0
-             | d < 1 && y <= minY + epsilon -> Vec 0 (-1) 0
-             | otherwise -> Vec x normalY z
-    Group {} -> error "no local normal for groups"
+  normalToWorld shape localNormal
   where
-    Point x y z = worldToObject shape point
-    worldNormal localNormal = normalToWorld shape localNormal
+    localPoint = worldToObject shape point
+    localNormal = localNormalAt shape localPoint
+
+localNormalAt :: Shape -> Point -> Vec
+localNormalAt shape (Point x y z) = case shape of
+  Sphere {} -> Vec x y z
+  Plane {} -> Vec 0 1 0
+  Cube {} ->
+    let maxc = maximum [abs x, abs y, abs z]
+    in if | maxc ~= abs x -> Vec x 0 0
+          | maxc ~= abs y -> Vec 0 y 0
+          | maxc ~= abs z -> Vec 0 0 z
+  Cylinder {minY, maxY} ->
+    let d = x ^ 2 + z ^ 2
+    in if | d < 1 && y >= maxY - epsilon -> Vec 0 1 0
+          | d < 1 && y <= minY + epsilon -> Vec 0 (-1) 0
+          | otherwise -> Vec x 0 z
+  Cone {minY, maxY} ->
+    let d = x ^ 2 + z ^ 2
+        normalY = if y > 0 then - (sqrt d) else sqrt d
+    in if | d < 1 && y >= maxY - epsilon -> Vec 0 1 0
+          | d < 1 && y <= minY + epsilon -> Vec 0 (-1) 0
+          | otherwise -> Vec x normalY z
+  Group {} -> error "no local normal for groups"
 
 {- Group helpers -}
 addChild :: Shape -> Shape -> (Shape, Shape)
@@ -170,7 +169,6 @@ normalToWorld shape normal =
   where
     newNormal =
       normalize $ transpose (inverse (transform shape)) `mvMult` normal
-
 
 {- Default shapes -}
 defaultSphere :: Shape

@@ -1,7 +1,7 @@
 module ShapeTest where
 
 import Intersection (atSL, headSL)
-import Shape (defaultCube, defaultPlane, defaultSphere, intersect, normalAt, defaultCylinder, defaultCone, defaultGroup, addChild, addChildren, worldToObject, normalToWorld)
+import Shape (defaultCube, defaultPlane, defaultSphere, intersect, normalAt, defaultCylinder, defaultCone, defaultGroup, addChild, addChildren, worldToObject, normalToWorld, localNormalAt)
 import Test.HUnit (Test (..), assertEqual, assertBool)
 import Transformation (translation, scaling, rotationY)
 import Types
@@ -134,7 +134,7 @@ testCubeNormalAt = TestCase $ do
           Vec 1 0 0,
           Vec (-1) 0 0
         ]
-  assertEqual "cube normal at various points" normals (map (normalAt c) points)
+  assertEqual "cube normal at various points" normals (map (localNormalAt c) points)
 
 testCylinderIntersectHit :: Test
 testCylinderIntersectHit = TestCase $ do
@@ -191,7 +191,7 @@ testCylinderNormalAt = TestCase $ do
           Vec 0 0 1,
           Vec (-1) 0 0
         ]
-  assertEqual "normal at various points" normals (map (normalAt cyl) points)
+  assertEqual "normal at various points" normals (map (localNormalAt cyl) points)
 
 testIntersectConstrainedCylinder :: Test
 testIntersectConstrainedCylinder = TestCase $ do
@@ -258,7 +258,7 @@ testClosedCylinderNormalAt = TestCase $ do
           Vec 0 1 0,
           Vec 0 1 0
         ]
-  assertEqual "normal at closed cylinder" normals (map (normalAt cyl) points)
+  assertEqual "normal at closed cylinder" normals (map (localNormalAt cyl) points)
 
 testConeIntersect :: Test
 testConeIntersect = TestCase $ do
@@ -325,7 +325,7 @@ testConeNormalAt = TestCase $ do
           Vec 1 (-sqrt 2) 1,
           Vec (-1) 1 0
         ]
-  assertEqual "normals on infinte cone" normals (map (normalAt cone) points)
+  assertEqual "normals on infinte cone" normals (map (localNormalAt cone) points)
 
 testEmptyGroupIntersect :: Test
 testEmptyGroupIntersect = TestCase $ do
