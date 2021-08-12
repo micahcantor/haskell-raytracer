@@ -1,21 +1,24 @@
 module Exercises.Chapter11 where
 
-import Camera
-  ( defaultCamera,
-    render,
-  )
+import Camera (defaultCamera, render)
 import Canvas (writeCanvas)
-import Material (black, checkerPattern, defaultMaterial, glass, gradientPattern, ringPattern, stripePattern, white)
-import Shape (defaultPlane, defaultSphere, glassSphere)
+import Constants
+  ( defaultMaterial,
+    defaultPlane,
+    glass,
+    glassSphere,
+    white,
+  )
+import Material (stripePattern)
 import Transformation (rotationX, scaling, translation, viewTransform)
 import Types
   ( Camera (..),
     Canvas,
     Color (Color),
+    Light (PointLight),
     Material (..),
     Pattern (..),
     Point (Point),
-    Light (PointLight),
     Shape (..),
     Vec (Vec),
     World (lights, objects),

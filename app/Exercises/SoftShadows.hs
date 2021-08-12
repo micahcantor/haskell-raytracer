@@ -1,10 +1,9 @@
 module Exercises.SoftShadows where
 
+import Constants ( defaultSphere, defaultPlane, defaultMaterial )
 import Camera (defaultCamera, render)
 import Canvas (writeCanvas)
 import Light (areaLight)
-import Material (defaultMaterial, glass, white)
-import Shape (defaultCube, defaultPlane, defaultSphere)
 import Transformation (scaling, translation, viewTransform)
 import Types
   ( Camera (..),

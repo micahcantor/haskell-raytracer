@@ -4,22 +4,20 @@ import Camera
   ( defaultCamera,
     render,
   )
+import Constants ( defaultSphere, defaultPlane, defaultMaterial )
 import Canvas (writeCanvas )
-import Shape (defaultPlane, defaultSphere)
 import World ( defaultWorld )
-import Material
-    ( defaultMaterial )
 import Transformation ( scaling, translation, viewTransform )
 import Types
-    ( Shape(..),
-      Material(color, diffuse, specular),
-      Point(Point),
+    ( Point(Point),
       Vec(Vec),
-      World(lights, objects),
-      PointLight(PointLight),
-      Color(Color),
+      Shape(material, transform),
+      Camera(hSize, vSize, fov, camTransform),
       Canvas,
-      Camera(..) )
+      Color(Color),
+      Light(PointLight),
+      Material(color, diffuse, specular),
+      World(lights, objects) )
 
 drawScene :: Canvas
 drawScene = render camera world

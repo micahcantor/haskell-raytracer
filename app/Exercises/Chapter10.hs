@@ -4,22 +4,22 @@ import Camera
   ( defaultCamera,
     render,
   )
+import Constants
+    ( defaultSphere, defaultPlane, defaultMaterial, white )
 import Canvas (writeCanvas)
-import Material (black, checkerPattern, defaultMaterial, gradientPattern, ringPattern, stripePattern, white)
-import Shape (defaultPlane, defaultSphere)
+import Material ( stripePattern, gradientPattern ) 
 import Transformation (rotationX, scaling, translation, viewTransform)
 import Types
-  ( Camera (transform, fov, hSize, vSize),
-    Canvas,
-    Color (Color),
-    Material (..),
-    Pattern (..),
-    Point (Point),
-    PointLight (PointLight),
-    Shape (..),
-    Vec (Vec),
-    World (lights, objects),
-  )
+    ( Point(Point),
+      Vec(Vec),
+      Shape(transform, material),
+      Camera(hSize, vSize, fov, camTransform),
+      Canvas,
+      Color(Color),
+      Light(PointLight),
+      Material(pattern, diffuse, specular),
+      Pattern(patTransform),
+      World(lights, objects) )
 import World (defaultWorld)
 
 drawScene :: Canvas
@@ -54,7 +54,7 @@ drawScene = render camera world
         { transform = translation (-1.5) 0.33 (-0.75) * scaling 0.33 0.33 0.33,
           material =
             defaultMaterial
-              { pattern = Just $ (gradientPattern (Color 1 0 0) white) {paTransform = translation (-1) 0 0 * scaling 2 1 1},
+              { pattern = Just $ (gradientPattern (Color 1 0 0) white) {patTransform = translation (-1) 0 0 * scaling 2 1 1},
                 diffuse = 0.7,
                 specular = 0.3
               }

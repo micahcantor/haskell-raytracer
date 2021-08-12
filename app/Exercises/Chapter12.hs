@@ -1,8 +1,8 @@
 module Exercises.Chapter12 where
 
+import Constants
+    ( defaultPlane, defaultCube, defaultMaterial, glass )
 import Camera (render, defaultCamera)
-import Material (defaultMaterial, glass, white)
-import Shape (defaultCube, defaultPlane)
 import Transformation (viewTransform)
 import Types
   ( Camera (..),

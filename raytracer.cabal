@@ -25,7 +25,7 @@ library
 
 executable raytracer
   main-is:             Main.hs
-  other-modules:       Exercises.SoftShadows, Exercises.Chapter12, Exercises.Chapter11
+  other-modules:       Exercises.Chapter14, Exercises.SoftShadows, Exercises.Chapter12, Exercises.Chapter11
   -- other-extensions:
   build-depends:       base ^>=4.14.1.0, raytracer, matrix
   hs-source-dirs:      app

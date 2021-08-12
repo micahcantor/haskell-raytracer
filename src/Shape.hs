@@ -24,6 +24,11 @@ import VecPoint (dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd)
 {- Main shape functions -}
 intersect :: Shape -> Ray -> Intersections
 intersect shape ray =
+  let transformedRay = Ray.transform ray (inverse (transform shape))
+   in localIntersect shape transformedRay
+    
+localIntersect :: Shape -> Ray -> Intersections
+localIntersect shape ray@(Ray origin direction) = 
   case shape of
     Sphere {} ->
       let sphereToRay = origin `pSub` Point 0 0 0 -- sphere is by default centered at origin
@@ -33,17 +38,17 @@ intersect shape ray =
           d = (b ^ 2) - (4 * a * c)
           t1 = Intersection (((- b) - sqrt d) / (2 * a)) shape
           t2 = Intersection (((- b) + sqrt d) / (2 * a)) shape
-       in toIntersections (if d < 0 then [] else [t1, t2])
+        in toIntersections (if d < 0 then [] else [t1, t2])
     Plane {} ->
       let t = - o_y / d_y
-       in toIntersections ([Intersection t shape | abs d_y >= epsilon])
+        in toIntersections ([Intersection t shape | abs d_y >= epsilon])
     Cube {} ->
       let (xtmin, xtmax) = checkAxis o_x d_x
           (ytmin, ytmax) = checkAxis o_y d_y
           (ztmin, ztmax) = checkAxis o_z d_z
           tmin = maximum [xtmin, ytmin, ztmin]
           tmax = minimum [xtmax, ytmax, ztmax]
-       in if tmin > tmax
+        in if tmin > tmax
             then toIntersections []
             else toIntersections [Intersection tmin shape, Intersection tmax shape]
     Cylinder {minY, maxY} ->
@@ -52,29 +57,19 @@ intersect shape ray =
           c = (o_x ^ 2) + (o_z ^ 2) - 1
           bodyIntersections = calcBodyIntersections a b c minY maxY
           capIntersections = calcCapIntersections shape
-       in toIntersections (bodyIntersections ++ capIntersections)
+        in toIntersections (bodyIntersections ++ capIntersections)
     Cone {minY, maxY} ->
       let a = (d_x ^ 2) - (d_y ^ 2) + (d_z ^ 2)
           b = (2 * o_x * d_x) - (2 * o_y * d_y) + (2 * o_z * d_z)
           c = (o_x ^ 2) - (o_y ^ 2) + (o_z ^ 2)
-          t = - c / (2 * b) -- used when a is zero and b is not
           bodyIntersections = calcBodyIntersections a b c minY maxY
           capIntersections = calcCapIntersections shape
-       in toIntersections (bodyIntersections ++ capIntersections)
+        in toIntersections (bodyIntersections ++ capIntersections)
     Group {children} ->
-      foldMap (`intersect` transformedRay) children
+      foldMap (`intersect` ray) children
   where
-    transformedRay@(Ray origin direction) =
-      Ray.transform ray (inverse (transform shape))
     Point o_x o_y o_z = origin
     Vec d_x d_y d_z = direction
-
-    checkAxis origin direction
-      | tmin > tmax = (tmax, tmin)
-      | otherwise = (tmin, tmax)
-      where
-        tmin = ((-1) - origin) / direction
-        tmax = (1 - origin) / direction
 
     calcBodyIntersections a b c minY maxY
       | a ~= 0 && b ~/= 0 = [Intersection t shape]
@@ -106,6 +101,14 @@ intersect shape ray =
           let x = o_x + t * d_x
               z = o_z + t * d_z
            in [Intersection t shape | x ^ 2 + z ^ 2 <= radius ^ 2]
+
+checkAxis :: Double -> Double -> (Double, Double)
+checkAxis origin direction
+  | tmin > tmax = (tmax, tmin)
+  | otherwise = (tmin, tmax)
+  where
+    tmin = ((-1) - origin) / direction
+    tmax = (1 - origin) / direction
 
 normalAt :: Shape -> Point -> Vec
 normalAt shape point =
@@ -146,9 +149,9 @@ addChild group@Group {children} shape =
 addChildren :: Shape -> [Shape] -> (Shape, [Shape])
 addChildren group = foldr f (group, [])
   where
-    f x (g, xs) =
-      let (newGroup, newShape) = addChild g x
-       in (newGroup, newShape : xs)
+    f oldShape (oldGroup, oldShapes) =
+      let (newGroup, newShape) = addChild oldGroup oldShape
+       in (newGroup, newShape : oldShapes)
 
 worldToObject :: Shape -> Point -> Point
 worldToObject shape point =
