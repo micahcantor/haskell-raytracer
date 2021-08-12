@@ -18,6 +18,7 @@ import Types
     toIntersections,
   )
 import VecPoint (dot, epsilon, reflect, vMult, vNeg, vpAdd, vpSub)
+import Material (getMaterial)
 
 headSL :: Intersections -> Intersection
 headSL = head . SL.fromSortedList
@@ -57,7 +58,7 @@ computeRefraction hit intersections =
       | i == hit = (n1', n2')
       | otherwise = go xs containers' (n1', n2')
       where
-        getFirstRefractive = refractive . material . head
+        getFirstRefractive = refractive . getMaterial . head
         n1'
           | i == hit = case containers of
             [] -> 1.0

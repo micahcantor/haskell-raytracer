@@ -26,9 +26,9 @@ intersect :: Shape -> Ray -> Intersections
 intersect shape ray =
   let transformedRay = Ray.transform ray (inverse (transform shape))
    in localIntersect shape transformedRay
-    
+
 localIntersect :: Shape -> Ray -> Intersections
-localIntersect shape ray@(Ray origin direction) = 
+localIntersect shape ray@(Ray origin direction) =
   case shape of
     Sphere {} ->
       let sphereToRay = origin `pSub` Point 0 0 0 -- sphere is by default centered at origin
@@ -153,14 +153,27 @@ addChildren group = foldr f (group, [])
       let (newGroup, newShape) = addChild oldGroup oldShape
        in (newGroup, newShape : oldShapes)
 
+-- Propagate an update to a shape down to the leaves.
+-- Necessary because of lack of mutation.
+updateGroup :: Shape -> (Shape -> Shape) -> Shape
+updateGroup group@Group{} update =
+  let updated = update group
+   in updated {children = map (`updateGroup` update) (children updated)}
+updateGroup primitive update =
+  case parent primitive of
+    Nothing -> primitive
+    Just p -> primitive {parent = Just (update p)}
+
 updateTransform :: Shape -> Transformation -> Shape
-updateTransform group@Group{children} t = 
-  let transformed = group {transform = t}
-      setParent g c = c {parent = Just g}
-   in transformed {children = map (setParent transformed) children}
+updateTransform shape t =
+  updateGroup shape (\s -> s {transform = t})
+
+updateMaterial :: Shape -> Material -> Shape
+updateMaterial shape m =
+  updateGroup shape (\s -> s {material = m})
 
 worldToObject :: Shape -> Point -> Point
-worldToObject shape point =
+worldToObject shape point = 
   case parent shape of
     Nothing -> inverse (transform shape) `mpMult` point
     Just p ->
@@ -177,4 +190,3 @@ normalToWorld shape normal =
   where
     newNormal =
       normalize $ transpose (inverse (transform shape)) `mvMult` normal
-

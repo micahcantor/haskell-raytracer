@@ -8,7 +8,7 @@ import Data.SortedList as SL (fromSortedList)
 import Debug.Trace (traceShow)
 import Intersection (atSL, headSL, hit, prepareComputation, schlick)
 import Light (lighting, pointOnLight, samplePoints)
-import Material (testPattern)
+import Material (testPattern, getMaterial)
 import Shape (intersect)
 import Transformation (scaling, translation)
 import Types
@@ -53,7 +53,7 @@ shadeHit w@(World lights _) comps remaining =
         surface + (reflectance `scale` reflected) + ((1 - reflectance) `scale` refracted)
       | otherwise = surface + reflected + refracted
       where
-        objMaterial = material object
+        objMaterial = getMaterial object
         intensity = intensityAt light over w
         surface = lighting objMaterial object light point eye normal intensity
         reflected = reflectedColor w comps remaining
@@ -105,7 +105,7 @@ reflectedColor w comps remaining
   | otherwise = reflectColor
   where
     Computation {object, over, reflect} = comps
-    matReflective = reflective (material object)
+    matReflective = reflective (getMaterial object)
     reflectRay = Ray over reflect
     reflectColor = matReflective `scale` colorAt w reflectRay (remaining - 1)
 
@@ -117,7 +117,7 @@ refractedColor w comps remaining
   | otherwise = refractColor
   where
     Computation {object, eye, normal, under, n1, n2} = comps
-    matTransparency = transparency (material object)
+    matTransparency = transparency (getMaterial object)
     nRatio = n1 / n2
     cos_i = eye `dot` normal
     sin2_t = (nRatio ^ 2) * (1 - (cos_i ^ 2))

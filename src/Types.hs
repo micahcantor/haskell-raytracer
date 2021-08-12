@@ -98,7 +98,8 @@ data Shape
         closed :: Bool
       }
   | Group
-      { transform :: Transformation,
+      { material :: Material,
+        transform :: Transformation,
         parent :: Maybe Shape,
         children :: [Shape]
       }

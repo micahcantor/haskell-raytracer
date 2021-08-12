@@ -1,9 +1,10 @@
 module Material where
 
+import Color (scale)
+import Constants (defaultMaterial)
+import Shape (worldToObject)
 import Transformation (identity, inverse, mpMult)
 import Types (Color (..), Material (..), Pattern (..), Point (..), Shape (..))
-import Color (scale)
-import Shape (worldToObject)
 
 defaultPattern :: Pattern
 defaultPattern = Pattern [] identity (\_ (Point x y z) -> Color x y z)
@@ -15,6 +16,14 @@ patternAtShape p@(Pattern _ patternTransform colorAt) shape worldPoint =
     shapeTransform = transform shape
     objectPoint = worldToObject shape worldPoint
     patternPoint = inverse patternTransform `mpMult` objectPoint
+
+getMaterial :: Shape -> Material
+getMaterial shape
+  | material shape == defaultMaterial =
+    case parent shape of
+      Nothing -> material shape
+      Just p -> getMaterial p
+  | otherwise = material shape
 
 {- Stripes -}
 stripePattern :: Color -> Color -> Pattern
@@ -54,5 +63,5 @@ checkerAt (Pattern (c1 : c2 : _) _ _) (Point x y z)
   | otherwise = c2
 
 {- testPattern -}
-testPattern :: Pattern 
+testPattern :: Pattern
 testPattern = Pattern [] identity (\_ (Point x y z) -> Color x y z)

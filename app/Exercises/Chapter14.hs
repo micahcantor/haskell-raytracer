@@ -1,19 +1,31 @@
 module Exercises.Chapter14 where
 
-import Constants ( defaultSphere, defaultCylinder, defaultGroup )
+import Camera (defaultCamera, render)
+import Canvas (writeCanvas)
+import Constants (defaultCylinder, defaultGroup, defaultMaterial, defaultSphere, white)
+import Debug.Trace (traceShow)
+import Shape (addChildren, updateTransform, updateMaterial)
 import Transformation
-    ( rotationY, scaling, translation, rotationZ, viewTransform )
+  ( rotationY,
+    rotationZ,
+    scaling,
+    translation,
+    viewTransform,
+  )
 import Types
-    ( Point(Point),
-      Vec(Vec),
-      Shape(minY, maxY, transform),
-      Camera(hSize, vSize, fov, camTransform),
-      Canvas,
-      World(objects) )
-import Shape ( addChildren )
-import Camera ( defaultCamera, render )
-import World ( defaultWorld )
-import Canvas ( writeCanvas ) 
+  ( Camera (camTransform, fov, hSize, vSize),
+    Canvas,
+    Color (..),
+    Light (..),
+    Material (..),
+    Point (Point),
+    Shape (..),
+    Vec (Vec),
+    World (objects),
+    children,
+    parent,
+  )
+import World (defaultWorld)
 
 hexagonCorner :: Shape
 hexagonCorner =
@@ -21,7 +33,8 @@ hexagonCorner =
 
 hexagonEdge :: Shape
 hexagonEdge =
-  let t = translation 0 0 (-1)
+  let t =
+        translation 0 0 (-1)
           * rotationY (- pi / 6)
           * rotationZ (- pi / 2)
           * scaling 0.25 1 0.25
@@ -31,29 +44,25 @@ hexagonSide :: Shape
 hexagonSide =
   fst (addChildren defaultGroup [hexagonCorner, hexagonEdge])
 
-hexSide2 :: Shape
-hexSide2 =
-  hexagonSide {transform = rotationY (- pi / 3)}
-
-hexTest :: Shape
-hexTest = fst (addChildren defaultGroup [hexagonSide, hexSide2])
-
 hexagon :: Shape
 hexagon =
-  let side n = hexagonSide {transform = rotationY (n * (pi / 3))}
+  let side n = updateTransform hexagonSide (rotationY (n * (pi / 3)))
       sides = map side [0 .. 5]
-   in fst (addChildren defaultGroup sides)
+      mat = defaultMaterial {color = Color 1 0.2 0.4, diffuse = 0.8, specular = 0.6, ambient = 0, shininess = 50, reflective = 0.3}
+      hex = fst (addChildren defaultGroup sides)
+   in updateMaterial hex mat
 
 drawScene :: Canvas
 drawScene = render camera world
   where
-    world = defaultWorld {objects = [hexTest]}
+    world = defaultWorld {objects = [hexagon]}
+    light = PointLight (Point 5 8 (-9)) white
     camera =
       defaultCamera
-        { hSize = 333,
-          vSize = 250,
-          fov = pi / 3,
-          camTransform = viewTransform (Point (-2.6) 1.5 (-3.9)) (Point (-0.6) 1 (-0.8)) (Vec 0 1 0)
+        { hSize = 800,
+          vSize = 400,
+          fov = 0.3,
+          camTransform = viewTransform (Point 2 4 (-9)) (Point 0 0 0) (Vec 0 1 0)
         }
 
 runChapter14 = writeCanvas "hexagon.ppm" drawScene

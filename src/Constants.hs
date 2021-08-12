@@ -50,7 +50,7 @@ defaultCone :: Shape
 defaultCone = Cone defaultMaterial identity Nothing negInf posInf False
 
 defaultGroup :: Shape
-defaultGroup = Group identity Nothing []
+defaultGroup = Group defaultMaterial identity Nothing []
 
 posInf, negInf :: Double
 posInf = 1 / 0
