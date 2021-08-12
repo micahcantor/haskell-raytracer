@@ -66,12 +66,25 @@ data Camera = Camera
 
 {- SHAPES -}
 data Shape
-  = Sphere {material :: Material, transform :: Transformation}
-  | Plane {material :: Material, transform :: Transformation}
-  | Cube {material :: Material, transform :: Transformation}
+  = Sphere
+      { material :: Material,
+        transform :: Transformation,
+        parent :: Maybe Shape
+      }
+  | Plane
+      { material :: Material,
+        transform :: Transformation,
+        parent :: Maybe Shape
+      }
+  | Cube
+      { material :: Material,
+        transform :: Transformation,
+        parent :: Maybe Shape
+      }
   | Cylinder
       { material :: Material,
         transform :: Transformation,
+        parent :: Maybe Shape,
         minY :: Double,
         maxY :: Double,
         closed :: Bool
@@ -79,9 +92,15 @@ data Shape
   | Cone
       { material :: Material,
         transform :: Transformation,
+        parent :: Maybe Shape,
         minY :: Double,
         maxY :: Double,
         closed :: Bool
+      }
+  | Group
+      { transform :: Transformation,
+        parent :: Maybe Shape,
+        children :: [Shape]
       }
   deriving (Show, Eq)
 

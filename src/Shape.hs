@@ -5,7 +5,7 @@ module Shape where
 import Data.Matrix (transpose)
 import qualified Data.SortedList as SL
 import Material (defaultMaterial, glass)
-import Ray (transform)
+import qualified Ray (transform)
 import Transformation (identity, inverse, mpMult, mvMult, scaling, translation)
 import Types
   ( Computation (Computation),
@@ -63,9 +63,12 @@ intersect shape ray =
           bodyIntersections = calcBodyIntersections a b c minY maxY
           capIntersections = calcCapIntersections shape
        in toIntersections (bodyIntersections ++ capIntersections)
+    Group {children} ->
+      foldMap (`intersect` transformedRay) children
   where
     transform = getTransformation shape
-    Ray origin direction = Ray.transform ray (inverse transform)
+    transformedRay@(Ray origin direction) = 
+      Ray.transform ray (inverse transform)
     Point o_x o_y o_z = origin
     Vec d_x d_y d_z = direction
 
@@ -107,7 +110,6 @@ intersect shape ray =
               z = o_z + t * d_z
            in [Intersection t shape | x ^ 2 + z ^ 2 <= radius ^ 2]
 
-
 normalAt :: Shape -> Point -> Vec
 normalAt shape point =
   case shape of
@@ -138,24 +140,51 @@ normalAt shape point =
     Point x y z = inverseTransform `mpMult` point
     worldNormal localNormal = transpose inverseTransform `mvMult` localNormal
 
+{- Group helpers -}
+addChild :: Shape -> Shape -> (Shape, Shape)
+addChild group@Group {children} shape = 
+  let newShape = shape { parent = Just group }
+      newGroup = group { children = newShape : children }
+   in (newGroup, newShape)
+
+worldToObject :: Shape -> Point -> Point
+worldToObject shape point =
+  case parent shape of
+    Nothing -> inverse (transform shape) `mpMult` point
+    Just p ->
+      let objectPoint = worldToObject p point
+       in inverse (transform shape) `mpMult` objectPoint
+
+normalToWorld :: Shape -> Vec -> Vec
+normalToWorld shape normal =
+  case parent shape of
+     Nothing -> newNormal
+     Just p -> 
+       let worldNormal = normalToWorld p newNormal
+        in worldNormal
+  where
+    newNormal = 
+      normalize $ transpose (inverse (transform shape)) `mvMult` normal
+
+
 {- Default shapes -}
 defaultSphere :: Shape
-defaultSphere = Sphere defaultMaterial identity
+defaultSphere = Sphere defaultMaterial identity Nothing
 
 glassSphere :: Shape
-glassSphere = Sphere glass identity
+glassSphere = Sphere glass identity Nothing
 
 defaultPlane :: Shape
-defaultPlane = Plane defaultMaterial identity
+defaultPlane = Plane defaultMaterial identity Nothing
 
 defaultCube :: Shape
-defaultCube = Cube defaultMaterial identity
+defaultCube = Cube defaultMaterial identity Nothing
 
 defaultCylinder :: Shape
-defaultCylinder = Cylinder defaultMaterial identity negInf posInf False
+defaultCylinder = Cylinder defaultMaterial identity Nothing negInf posInf False
 
 defaultCone :: Shape
-defaultCone = Cone defaultMaterial identity negInf posInf False
+defaultCone = Cone defaultMaterial identity Nothing negInf posInf False
 
 posInf, negInf :: Double
 posInf = 1 / 0
