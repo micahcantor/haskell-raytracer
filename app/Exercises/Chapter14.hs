@@ -48,7 +48,7 @@ hexagon :: Shape
 hexagon =
   let side n = updateTransform hexagonSide (rotationY (n * (pi / 3)))
       sides = map side [0 .. 5]
-      mat = defaultMaterial {color = Color 1 0.2 0.4, diffuse = 0.8, specular = 0.6, ambient = 0, shininess = 50, reflective = 0.3}
+      mat = defaultMaterial {color = Color 1 0.2 0.4}
       hex = fst (addChildren defaultGroup sides)
    in updateMaterial hex mat
 
