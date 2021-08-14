@@ -19,7 +19,7 @@ import Types
     (~/=),
     (~=), fromIntersections, Transformation
   )
-import VecPoint (dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd)
+import VecPoint (dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd, cross)
 
 {- Main shape functions -}
 intersect :: Shape -> Ray -> Intersections
@@ -65,6 +65,20 @@ localIntersect shape ray@(Ray origin direction) =
           bodyIntersections = calcBodyIntersections a b c minY maxY
           capIntersections = calcCapIntersections shape
         in toIntersections (bodyIntersections ++ capIntersections)
+    Triangle {p1, e1, e2} ->
+      let dir_cross_e2 = direction `cross` e2
+          det = e1 `dot` dir_cross_e2
+          f = 1 / det
+          p1_to_origin = origin `pSub` p1
+          u = f * (p1_to_origin `dot` dir_cross_e2) 
+          origin_cross_e1 = p1_to_origin `cross` e1
+          v = f * (direction `dot` origin_cross_e1)
+          t = f * (e2 `dot` origin_cross_e1)
+       in toIntersections $ 
+            if | abs det < epsilon -> []
+               | u < 0 || u > 1 -> []
+               | v < 0 || u + v > 1 -> []
+               | otherwise -> [Intersection t shape]
     Group {children} ->
       foldMap (`intersect` ray) children
   where
@@ -137,6 +151,7 @@ localNormalAt shape (Point x y z) = case shape of
     in if | d < 1 && y >= maxY - epsilon -> Vec 0 1 0
           | d < 1 && y <= minY + epsilon -> Vec 0 (-1) 0
           | otherwise -> Vec x normalY z
+  Triangle {norm} -> norm
   Group {} -> error "no local normal for groups"
 
 {- Group helpers -}

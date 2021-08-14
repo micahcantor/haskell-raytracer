@@ -1,23 +1,27 @@
 module ShapeTest where
 
 import Constants
-    ( defaultSphere,
-      defaultPlane,
-      defaultCube,
-      defaultCylinder,
-      defaultCone,
-      defaultGroup )
+  ( defaultCone,
+    defaultCube,
+    defaultCylinder,
+    defaultGroup,
+    defaultPlane,
+    defaultSphere,
+    triangle,
+  )
 import Intersection (atSL, headSL)
-import Shape (intersect, normalAt, addChild, addChildren, worldToObject, normalToWorld, localNormalAt)
-import Test.HUnit (Test (..), assertEqual, assertBool)
-import Transformation (translation, scaling, rotationY)
+import Shape (addChild, addChildren, intersect, localIntersect, localNormalAt, normalAt, normalToWorld, worldToObject)
+import Test.HUnit (Test (..), assertBool, assertEqual)
+import Transformation (rotationY, scaling, translation)
 import Types
   ( Intersection (Intersection),
     Point (Point),
     Ray (Ray),
     Shape (..),
     Vec (Vec),
-    toIntersections, (~=), fromIntersections
+    fromIntersections,
+    toIntersections,
+    (~=),
   )
 import VecPoint (normalize)
 
@@ -166,7 +170,7 @@ testCylinderIntersectHit = TestCase $ do
   assertEqual "t1 when ray strikes cyl" t1s (map (get_t . (`atSL` 1)) xs)
 
 testCylinderIntersectMiss :: Test
-testCylinderIntersectMiss = TestCase $ do
+testCylinderIntersectMiss = TestCase $
   let cyl = defaultCylinder
       origins =
         [ Point 1 0 0,
@@ -301,7 +305,7 @@ testConeIntersectParallel = TestCase $ do
   assertEqual "cone intersected once" 1 (length xs)
   assertBool "cone intersected at t" (get_t (headSL xs) ~= 0.35355)
 
-testConeIntersectCap :: Test 
+testConeIntersectCap :: Test
 testConeIntersectCap = TestCase $ do
   let cone = defaultCone {minY = -0.5, maxY = 0.5, closed = True}
       origins =
@@ -319,9 +323,9 @@ testConeIntersectCap = TestCase $ do
       xs = map (intersect cone) rays
   assertEqual "counts of intersections with caps" counts (map length xs)
 
-testConeNormalAt :: Test 
+testConeNormalAt :: Test
 testConeNormalAt = TestCase $ do
-  let cone = defaultCone 
+  let cone = defaultCone
       points =
         [ Point 0 0 0,
           Point 1 1 1,
@@ -329,7 +333,7 @@ testConeNormalAt = TestCase $ do
         ]
       normals =
         [ Vec 0 0 0,
-          Vec 1 (-sqrt 2) 1,
+          Vec 1 (- sqrt 2) 1,
           Vec (-1) 1 0
         ]
   assertEqual "normals on infinte cone" normals (map (localNormalAt cone) points)
@@ -341,7 +345,7 @@ testEmptyGroupIntersect = TestCase $ do
       xs = g `intersect` r
   assertEqual "empty group has no intersection" (toIntersections []) xs
 
-testGroupIntersect :: Test 
+testGroupIntersect :: Test
 testGroupIntersect = TestCase $ do
   let s1 = defaultSphere
       s2 = defaultSphere {transform = translation 0 0 (-3)}
@@ -357,16 +361,16 @@ testGroupIntersect = TestCase $ do
   assertEqual "third is s1'" s1' (objAt 2 xs)
   assertEqual "fourth is s1'" s1' (objAt 3 xs)
 
-testIntersectTransformedGroup :: Test 
+testIntersectTransformedGroup :: Test
 testIntersectTransformedGroup = TestCase $ do
   let g = defaultGroup {transform = scaling 2 2 2}
       s = defaultSphere {transform = translation 5 0 0}
-      (g', _) = addChild g s 
+      (g', _) = addChild g s
       r = Ray (Point 10 0 (-10)) (Vec 0 0 1)
       xs = fromIntersections $ g' `intersect` r
   assertEqual "two intersections" 2 (length xs)
 
-testWorldToObject :: Test 
+testWorldToObject :: Test
 testWorldToObject = TestCase $ do
   let s = defaultSphere {transform = translation 5 0 0}
       g1 = defaultGroup {transform = rotationY (pi / 2)}
@@ -376,7 +380,7 @@ testWorldToObject = TestCase $ do
       p = worldToObject s' (Point (-2) 0 (-10))
   assertEqual "world to object" (Point 0 0 (-1)) p
 
-testNormalToWorld :: Test 
+testNormalToWorld :: Test
 testNormalToWorld = TestCase $ do
   let s = defaultSphere {transform = translation 5 0 0}
       g1 = defaultGroup {transform = rotationY (pi / 2)}
@@ -386,7 +390,7 @@ testNormalToWorld = TestCase $ do
       n = normalToWorld s' (Vec (sqrt 3 / 3) (sqrt 3 / 3) (sqrt 3 / 3))
   assertEqual "normal to world" (Vec 0.2857 0.4286 (-0.8571)) n
 
-testNormalAtGroupMember :: Test 
+testNormalAtGroupMember :: Test
 testNormalAtGroupMember = TestCase $ do
   let s = defaultSphere {transform = translation 5 0 0}
       g1 = defaultGroup {transform = rotationY (pi / 2)}
@@ -395,6 +399,43 @@ testNormalAtGroupMember = TestCase $ do
       (g2'', s') = addChild g2' s
       n = normalAt s' (Point 1.7321 1.1547 (-5.5774))
   assertEqual "normal at group member" (Vec 0.2857 0.4286 (-0.8571)) n
+
+testCreateTriangle :: Test
+testCreateTriangle = TestCase $ do
+  let t = triangle (Point 0 1 0) (Point (-1) 0 0) (Point 1 0 0)
+  assertEqual "e1" (Vec (-1) (-1) 0) (e1 t)
+  assertEqual "e2" (Vec 1 (-1) 0) (e2 t)
+  assertEqual "norm" (Vec 0 0 (-1)) (norm t)
+
+testTriangleNormalAt :: Test
+testTriangleNormalAt = TestCase $ do
+  let t = triangle (Point 0 1 0) (Point (-1) 0 0) (Point 1 0 0)
+      n1 = localNormalAt t (Point 0 0.5 0)
+      n2 = localNormalAt t (Point (-0.5) 0.75 0)
+      n3 = localNormalAt t (Point 0.5 0.25 0)
+  assertEqual "n1" (norm t) n1
+  assertEqual "n2" (norm t) n2
+  assertEqual "n3" (norm t) n3
+
+testIntersectTriangleMiss :: Test
+testIntersectTriangleMiss = TestCase $ do
+  let t = triangle (Point 0 1 0) (Point (-1) 0 0) (Point 1 0 0)
+      rays =
+        [ Ray (Point 0 (-1) (-2)) (Vec 0 1 0),
+          Ray (Point 1 1 (-2)) (Vec 0 0 1),
+          Ray (Point (-1) 1 (-2)) (Vec 0 0 1),
+          Ray (Point 0 (-1) (-2)) (Vec 0 0 1)
+        ]
+      xs = fromIntersections . localIntersect t <$> rays
+  assertBool "miss triangle" (all null xs)
+
+testIntersectTriangle :: Test 
+testIntersectTriangle = TestCase $ do
+  let t = triangle (Point 0 1 0) (Point (-1) 0 0) (Point 1 0 0)
+      r = Ray (Point 0 0.5 (-2)) (Vec 0 0 1)
+      xs = fromIntersections $ localIntersect t r
+      get_t (Intersection t _) = t
+  assertEqual "hit triangle" (get_t (head xs)) 2
 
 tests :: Test
 tests =
@@ -423,5 +464,9 @@ tests =
       testIntersectTransformedGroup,
       testWorldToObject,
       testNormalToWorld,
-      testNormalAtGroupMember
+      testNormalAtGroupMember,
+      testCreateTriangle,
+      testTriangleNormalAt,
+      testIntersectTriangleMiss,
+      testIntersectTriangle
     ]

@@ -3,10 +3,11 @@ module Constants where
 import Transformation ( identity )
 import Types
     ( Point(Point),
-      Shape(Group, Sphere, Plane, Cube, Cylinder, Cone),
+      Shape(Group, Sphere, Plane, Cube, Cylinder, Cone, Triangle),
       Color(..),
       Material(..),
       Pattern(Pattern) )
+import VecPoint (pSub, normalize, cross)
 
 {- Patterns -}
 defaultMaterial :: Material
@@ -48,6 +49,14 @@ defaultCylinder = Cylinder defaultMaterial identity Nothing negInf posInf False
 
 defaultCone :: Shape
 defaultCone = Cone defaultMaterial identity Nothing negInf posInf False
+
+triangle :: Point -> Point -> Point -> Shape
+triangle p1 p2 p3 = 
+  Triangle defaultMaterial identity Nothing p1 p2 p3 e1 e2 normal
+  where
+    e1 = p2 `pSub` p1
+    e2 = p3 `pSub` p1
+    normal = normalize (e2 `cross` e1)
 
 defaultGroup :: Shape
 defaultGroup = Group defaultMaterial identity Nothing []

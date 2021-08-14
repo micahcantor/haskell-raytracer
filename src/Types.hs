@@ -97,6 +97,17 @@ data Shape
         maxY :: Double,
         closed :: Bool
       }
+  | Triangle
+      { material :: Material,
+        transform :: Transformation,
+        parent :: Maybe Shape,
+        p1 :: Point,
+        p2 :: Point,
+        p3 :: Point,
+        e1 :: Vec,
+        e2 :: Vec,
+        norm :: Vec
+      }
   | Group
       { material :: Material,
         transform :: Transformation,
