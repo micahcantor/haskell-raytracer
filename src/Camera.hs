@@ -41,7 +41,7 @@ rayForPixel c@(Camera hSize vSize fov transform) px py =
       worldY = halfHeight - yOffset
       transformInverse = inverse transform
       pixel = transformInverse `mpMult` Point worldX worldY (-1)
-      origin = transformInverse `mpMult` Point 0 0 0
+      origin = transformInverse `mpMult` Point 0 0 0 -- camera by default starts at origin
       direction = normalize (pixel `pSub` origin)
    in Ray origin direction
 
