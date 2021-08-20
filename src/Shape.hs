@@ -20,6 +20,7 @@ import Types
     (~=), fromIntersections, Transformation
   )
 import VecPoint (dot, epsilon, normalize, pSub, vMult, vNeg, vpAdd, cross)
+import Constants (triangle)
 
 {- Main shape functions -}
 intersect :: Shape -> Ray -> Intersections
@@ -70,11 +71,11 @@ localIntersect shape ray@(Ray origin direction) =
           det = e1 `dot` dir_cross_e2
           f = 1 / det
           p1_to_origin = origin `pSub` p1
-          u = f * (p1_to_origin `dot` dir_cross_e2) 
+          u = f * (p1_to_origin `dot` dir_cross_e2)
           origin_cross_e1 = p1_to_origin `cross` e1
           v = f * (direction `dot` origin_cross_e1)
           t = f * (e2 `dot` origin_cross_e1)
-       in toIntersections $ 
+       in toIntersections $
             if | abs det < epsilon -> []
                | u < 0 || u > 1 -> []
                | v < 0 || u + v > 1 -> []
@@ -188,7 +189,7 @@ updateMaterial shape m =
   updateGroup shape (\s -> s {material = m})
 
 worldToObject :: Shape -> Point -> Point
-worldToObject shape point = 
+worldToObject shape point =
   case parent shape of
     Nothing -> inverse (transform shape) `mpMult` point
     Just p ->
@@ -205,3 +206,12 @@ normalToWorld shape normal =
   where
     newNormal =
       normalize $ transpose (inverse (transform shape)) `mvMult` normal
+
+triangleInfo :: Shape -> String
+triangleInfo t =
+  unwords ["p1:", show (p1 t), 
+           "p2:", show (p2 t), 
+           "p3:", show (p3 t), 
+           "e1:", show (e1 t),
+           "e2:", show (e2 t),
+           "norm:", show (norm t)]

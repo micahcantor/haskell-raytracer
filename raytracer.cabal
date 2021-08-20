@@ -16,9 +16,9 @@ category:            Graphics
 extra-source-files:  CHANGELOG.md
 
 library
-  exposed-modules:     Camera, Canvas, Color, Constants, Intersection, Light, Material, Ray, Shape, Transformation, Types, VecPoint, World
+  exposed-modules:     Camera, Canvas, Color, Constants, Intersection, IO.OBJ, Light, Material, Ray, Shape, Transformation, Types, VecPoint, World
   -- other-modules:
-  build-depends:       base ^>=4.14.1.0, matrix, sorted-list, mtl, random, yaml
+  build-depends:       base ^>=4.14.1.0, matrix, sorted-list, random, yaml, parsec, containers
   default-extensions:  NamedFieldPuns
   hs-source-dirs:      src
   default-language:    Haskell2010
@@ -47,5 +47,5 @@ test-suite raytracer-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Main.hs
-  other-modules:       CameraTest, CanvasTest, ColorTest, IntersectionTest, LightTest, MaterialTest, RayTest, ShapeTest, TransformationTest, VecPointTest, WorldTest
+  other-modules:       CameraTest, CanvasTest, ColorTest, IntersectionTest, LightTest, MaterialTest, OBJTest, RayTest, ShapeTest, TransformationTest, VecPointTest, WorldTest
   build-depends:       base ^>=4.14.1.0, test-framework, test-framework-hunit, HUnit, sorted-list, raytracer, matrix

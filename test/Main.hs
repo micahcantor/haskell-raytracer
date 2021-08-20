@@ -6,6 +6,7 @@ import ColorTest as Color (tests)
 import IntersectionTest as Intersection (tests)
 import LightTest as Light (tests)
 import MaterialTest as Material (tests)
+import OBJTest as OBJ (tests)
 import RayTest as Ray (tests)
 import ShapeTest as Shape (tests)
 import Test.Framework (defaultMain)
@@ -26,6 +27,7 @@ main = defaultMain (hUnitTestToTests allTests)
           Intersection.tests,
           Light.tests,
           Material.tests,
+          OBJ.tests,
           Ray.tests,
           Shape.tests,
           Transformation.tests,
