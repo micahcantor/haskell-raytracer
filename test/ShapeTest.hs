@@ -354,7 +354,6 @@ testGroupIntersect = TestCase $ do
       r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
       xs = fromIntersections (g `intersect` r)
       objAt i xs = (\(Intersection _ obj) -> obj) (xs !! i)
-  print (length $ children g)
   assertEqual "four intersections" 4 (length xs)
   assertEqual "first is s2'" s2' (objAt 0 xs)
   assertEqual "second is s2'" s2' (objAt 1 xs)

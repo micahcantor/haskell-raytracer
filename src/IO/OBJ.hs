@@ -1,11 +1,11 @@
 module IO.OBJ where
 
 import Constants (defaultGroup, triangle)
-import Data.Either (fromRight)
+import Control.Monad.State.Lazy (State, evalState, get, put)
 import Data.Map (Map, (!))
 import qualified Data.Map as Map
 import Shape (addChildren)
-import Text.Parsec
+import Text.Parsec hiding (State)
 import Text.Parsec.String (Parser, parseFromFile)
 import Types (Point (..), Shape, children)
 
@@ -18,10 +18,9 @@ newtype ObjFace = Face [Int]
 data ObjLine = V ObjVertex | F ObjFace | G
   deriving (Show, Eq)
 
-data ObjGroup = ObjGroup
-  { vertices :: Map Int ObjVertex,
-    faces :: [ObjFace],
-    vtxCount :: Int
+data ParseResult = ParseResult
+  { vertices :: Map Int Point,
+    groups :: [Shape]
   }
   deriving (Show, Eq)
 
@@ -69,42 +68,45 @@ objLines :: Parser [ObjLine]
 objLines =
   map head <$> many1 ((vertex <|> face <|> group) `sepBy1` eol)
 
-parseGroups :: [ObjLine] -> [ObjGroup]
-parseGroups = go [empty]
-  where
-    empty = ObjGroup {vertices = Map.empty, faces = [], vtxCount = 0}
-    go groups [] = map (\g -> g { faces = reverse (faces g) }) groups
-    go (g : gs) (line : lines) =
-      case line of
-        V vertex ->
-          let newVertices = Map.insert (vtxCount g + 1) vertex (vertices g)
-              g' = g {vertices = newVertices, vtxCount = vtxCount g + 1}
-           in go (g' : gs) lines
-        F face ->
-          let g' = g {faces = face : faces g}
-           in go (g' : gs) lines
-        G -> go (empty : g : gs) lines
-
 triangulate :: [Point] -> [Shape]
 triangulate [x, y, z] = [triangle x y z]
 triangulate (a : vertices) =
   let adjacent = zip vertices (tail vertices)
-   in map (uncurry (triangle a)) adjacent
+   in [triangle a b c | (b, c) <- adjacent]
 
-toObj :: [ObjGroup] -> Shape
-toObj objGroups = fst (addChildren defaultGroup children)
+parseObj :: [ObjLine] -> ParseResult
+parseObj lines = evalState loop (lines, 0, Map.empty, [defaultGroup])
   where
-    children = concatMap f objGroups
-    f ObjGroup {vertices, faces} =
-      let vtxToPoint (Vertex x y z) = Point x y z
-          triangulateFace (Face ixs) =
-            let points = map (vtxToPoint . (vertices !)) ixs
-             in triangulate points
-       in concatMap triangulateFace faces
+    toPoint (Vertex x y z) = Point x y z
+    loop :: State ([ObjLine], Int, Map Int Point, [Shape]) ParseResult
+    loop = do
+      (lines, vtxCount, vertices, groups) <- get
+      case lines of
+        [] -> do
+          return (ParseResult vertices groups)
+        l : ls -> do
+          let g : gs = groups
+          case l of
+            V vertex -> do
+              let newVertices = Map.insert (vtxCount + 1) (toPoint vertex) vertices
+              put (ls, vtxCount + 1, newVertices, groups)
+            F (Face ixs) -> do
+              let points = [vertices ! i | i <- ixs]
+              let triangles = reverse (triangulate points)
+              let g' = fst (addChildren g triangles)
+              put (ls, vtxCount, vertices, g' : gs)
+            G ->
+              put (ls, vtxCount, vertices, defaultGroup : groups)
+          loop
 
-parseObj :: FilePath -> IO Shape
-parseObj source = do
-  tokens <- parseFromFile objLines source
-  let groups = parseGroups (fromRight [] tokens)
-  print groups
-  return (toObj groups)
+objToGroup :: ParseResult -> Shape
+objToGroup ParseResult {groups} =
+  let defaultGroup = last groups
+   in fst (addChildren defaultGroup (init groups))
+
+parseObjFile :: FilePath -> IO ParseResult
+parseObjFile source = do
+  parsed <- parseFromFile objLines source
+  case parsed of
+    Left err -> error (show err)
+    Right tokens -> return (parseObj tokens)

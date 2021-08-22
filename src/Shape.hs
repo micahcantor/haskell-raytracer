@@ -169,10 +169,10 @@ addChildren group = foldr f (group, [])
       let (newGroup, newShape) = addChild oldGroup oldShape
        in (newGroup, newShape : oldShapes)
 
--- Propagate an update to a shape down to the leaves.
+-- Update the parents of an updated group's children
 -- Necessary because of lack of mutation.
-updateGroup :: Shape -> (Shape -> Shape) -> Shape
-updateGroup group@Group{} update =
+updateGroupParents :: Shape -> (Shape -> Shape) -> Shape
+updateGroupParents group@Group{} update =
   let updated = update group
    in updated {children = map (`updateGroup` update) (children updated)}
 updateGroup primitive update =
@@ -182,11 +182,11 @@ updateGroup primitive update =
 
 updateTransform :: Shape -> Transformation -> Shape
 updateTransform shape t =
-  updateGroup shape (\s -> s {transform = t})
+  updateGroupParents shape (\s -> s {transform = t})
 
 updateMaterial :: Shape -> Material -> Shape
 updateMaterial shape m =
-  updateGroup shape (\s -> s {material = m})
+  updateGroupParents shape (\s -> s {material = m})
 
 worldToObject :: Shape -> Point -> Point
 worldToObject shape point =
